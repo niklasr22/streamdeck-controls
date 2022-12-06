@@ -1,14 +1,4 @@
 /.venv
 /.vscode
 /__pycache__
-/a.out
-/elgatoswtraffic.pcapng
-/streamdeck.c
-/test.bin
-/test.bmp
-/test.html
-/testbild.jpeg
-/testbild2.jpeg
-/ws_normal.bin
-/ws_pressed.jpeg
-/wstest.bmp
+/testfiles
