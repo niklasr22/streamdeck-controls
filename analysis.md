@@ -38,7 +38,7 @@ cmd:    0x03 0x0d [timeout in secs (2B le)]
 
 ```
 0x02 0x07 [key index (1B)] [is last package (1B)] [body length (2B le)] [package index (2B le)] [image as JPEG max. 1016B]
-total length 1024B
+Total and exact(!) length of 1024B required.
 ```
 
 
