@@ -31,6 +31,7 @@ class SDSystem:
         self._deck.add_event_listener(self._system_key_listener)
 
     def start(self) -> None:
+        self._deck.set_standby_timeout(600)
         self._deck_thread = Thread(target=self._deck.run)
         self._deck_thread.start()
         try:
@@ -105,6 +106,8 @@ class SDSystem:
                 self._deck_thread.join(2.0)
 
     def close(self) -> None:
+        self._deck.set_standby_timeout(1)
+        self.clear_deck()
         self._close_app(shutdown=True)
         self._stop_deck()
 
