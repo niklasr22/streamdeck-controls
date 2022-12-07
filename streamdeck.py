@@ -8,12 +8,12 @@ from typing import Callable, Iterator, Self
 
 
 class StreamDeck(ABC):
-    PID: int = 0
-    ICON_SIZE: int = 0
-    KEY_COUNT: int = 0
-    KEY_DATA_OFFSET: int = 0
-    IMAGE_CMD_HEADER_LENGTH: int = 0
-    IMAGE_CMD_MAX_PAYLOAD_LENGTH: int = 0
+    _PID: int = 0
+    _ICON_SIZE: int = 0
+    _KEY_COUNT: int = 0
+    _KEY_DATA_OFFSET: int = 0
+    _IMAGE_CMD_HEADER_LENGTH: int = 0
+    _IMAGE_CMD_MAX_PAYLOAD_LENGTH: int = 0
 
     def __init__(
         self, device: hid.Device, read_interval: int = 100, buffer_size: int = 1024
@@ -22,7 +22,8 @@ class StreamDeck(ABC):
         self._read_interval = read_interval
         self._buffer_size = buffer_size
         self._event_listeners: list[callable[[StreamDeck], None]] = []
-        self._keys: list[bool] = [False] * self.KEY_COUNT
+        self._keys: list[bool] = [False] * self._KEY_COUNT
+        self._running = False
 
     def __str__(self) -> str:
         return f"{self._device.product} ({self._device.manufacturer})"
@@ -41,25 +42,33 @@ class StreamDeck(ABC):
     ) -> bytes:
         ...
 
+    def get_key_count(self) -> int:
+        return self._KEY_COUNT
+
     def get_keys(self) -> Iterator[bool]:
-        return self._keys.__iter__
+        return self._keys.__iter__()
 
     def run(self) -> None:
+        self._running = True
         try:
-            while True:
+            while self._running:
                 data = self._device.read(self._buffer_size, self._read_interval)
                 if len(data) > 0:
                     keys_before = self._keys.copy()
                     self._keys = [
                         bool(k)
                         for k in data[
-                            self.KEY_DATA_OFFSET : self.KEY_DATA_OFFSET + self.KEY_COUNT
+                            self._KEY_DATA_OFFSET : self._KEY_DATA_OFFSET
+                            + self._KEY_COUNT
                         ]
                     ]
                     for listener in self._event_listeners:
                         listener(self, keys_before, self._keys.copy())
         except KeyboardInterrupt:
-            ...
+            self._running = False
+
+    def stop(self) -> None:
+        self._running = False
 
     def add_event_listener(
         self, callback: Callable[[Self, list[bool], list[bool]], None]
@@ -73,8 +82,8 @@ class StreamDeck(ABC):
         print("Close device")
         self._device.close()
 
-    def set_key_image(self, key: int, image: Image) -> None:
-        max_payload_length = self.IMAGE_CMD_MAX_PAYLOAD_LENGTH
+    def set_key_image(self, key: int, image: Image) -> bool:
+        max_payload_length = self._IMAGE_CMD_MAX_PAYLOAD_LENGTH
 
         img_byte_buffer = io.BytesIO()
         image.save(img_byte_buffer, format="JPEG")
@@ -83,43 +92,43 @@ class StreamDeck(ABC):
         package = 0
         offset = 0
         remaining_data = len(img_bytes)
-        print("Total length", remaining_data)
-        while remaining_data > 0:
-            payload_length = min(max_payload_length, remaining_data)
-            remaining_data -= payload_length
+        # print("Total length", remaining_data)
+        try:
+            while remaining_data > 0:
+                payload_length = min(max_payload_length, remaining_data)
+                remaining_data -= payload_length
 
-            header = self._get_send_image_command_header(
-                key,
-                remaining_data == 0,
-                payload_length,
-                package,
-            )
-            data = (
-                header
-                + img_bytes[offset : offset + payload_length]
-                + bytes([0x0] * (max_payload_length - payload_length))
-            )
-            # print(len(data), data)
-            # print(",".join([hex(d) for d in data]), len(data))
-            # print("------")
+                header = self._get_send_image_command_header(
+                    key,
+                    remaining_data == 0,
+                    payload_length,
+                    package,
+                )
+                data = (
+                    header
+                    + img_bytes[offset : offset + payload_length]
+                    + bytes([0x0] * (max_payload_length - payload_length))
+                )
 
-            self._device.write(data)
-            print(
-                "Wrote package", package, "Header:", header, "Data-Length:", len(data)
-            )
+                self._device.write(data)
+                # print(
+                #    "Wrote package", package, "Header:", header, "Data-Length:", len(data)
+                # )
 
-            offset += payload_length
-            package += 1
-        print("Sent image")
+                offset += payload_length
+                package += 1
+        except hid.HIDException:
+            return False
+        return True
 
 
 class StreamDeckMk2(StreamDeck):
-    PID: int = 0x0080
-    ICON_SIZE: int = 70
-    KEY_COUNT: int = 15
-    KEY_DATA_OFFSET: int = 4
-    IMAGE_CMD_HEADER_LENGTH: int = 8
-    IMAGE_CMD_MAX_PAYLOAD_LENGTH: int = 1016
+    _PID: int = 0x0080
+    _ICON_SIZE: int = 70
+    _KEY_COUNT: int = 15
+    _KEY_DATA_OFFSET: int = 4
+    _IMAGE_CMD_HEADER_LENGTH: int = 8
+    _IMAGE_CMD_MAX_PAYLOAD_LENGTH: int = 1016
 
     def __init__(
         self, device: hid.Device, read_interval: int = 60, buffer_size: int = 512

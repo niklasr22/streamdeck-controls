@@ -7,7 +7,7 @@ DEVICE_VID_ELGATO = 0x0FD9
 
 
 def find_streamdecks() -> list[StreamDeck]:
-    streamdeck_map = {StreamDeckMk2.PID: StreamDeckMk2}
+    streamdeck_map = {StreamDeckMk2._PID: StreamDeckMk2}
 
     decks = []
 
@@ -23,39 +23,34 @@ def find_streamdecks() -> list[StreamDeck]:
     return decks
 
 
-streamdecks = find_streamdecks()
-if len(streamdecks) == 0:
-    print("No streamdecks discovered")
-    exit()
+if __name__ == "__main__":
+    streamdecks = find_streamdecks()
+    if len(streamdecks) == 0:
+        print("No streamdecks discovered")
+        exit()
 
-deck = streamdecks[0]
-print(deck)
+    deck = streamdecks[0]
+    print(deck)
 
+    def update(
+        streamdeck: StreamDeck, keys_before: list[bool], keys: list[bool]
+    ) -> None:
+        if keys[0]:
+            streamdeck.set_brightness(10)
+        elif keys[1]:
+            streamdeck.set_brightness(90)
+        elif keys[2]:
+            streamdeck.set_standby_timeout(10)
+        elif keys[3]:
+            streamdeck.set_standby_timeout(0)
+        elif keys[4]:
+            with Image.open("testbild3.jpeg", mode="r") as img:
+                img = img.rotate(180)
+                streamdeck.set_key_image(4, image=img)
+        elif keys[5]:
+            with Image.open("goat.jpeg", mode="r") as img:
+                img = img.rotate(180)
+                streamdeck.set_key_image(4, image=img)
 
-def update(streamdeck: StreamDeck, keys_before: list[bool], keys: list[bool]) -> None:
-    if keys[0]:
-        streamdeck.set_brightness(10)
-    elif keys[1]:
-        streamdeck.set_brightness(90)
-    elif keys[2]:
-        streamdeck.set_standby_timeout(10)
-    elif keys[3]:
-        streamdeck.set_standby_timeout(0)
-    elif keys[4]:
-        with Image.open("testbild3.jpeg", mode="r") as img:
-            img = img.rotate(180)
-            streamdeck.set_key_image(4, image=img)
-    elif keys[5]:
-        with Image.open("goat.jpeg", mode="r") as img:
-            img = img.rotate(180)
-            streamdeck.set_key_image(4, image=img)
-
-
-deck.add_event_listener(update)
-deck.run()
-
-
-# with Image.open("btn.jpeg", mode="r") as img:
-#    deck.set_key_image(4, image=img)
-
-print("Shutdown")
+    deck.add_event_listener(update)
+    deck.run()
