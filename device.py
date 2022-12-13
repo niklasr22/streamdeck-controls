@@ -44,7 +44,7 @@ if __name__ == "__main__":
         elif keys[3]:
             streamdeck.set_standby_timeout(0)
         elif keys[4]:
-            with Image.open("testbild3.jpeg", mode="r") as img:
+            with Image.open("back_btn.jpeg", mode="r") as img:
                 img = img.rotate(180)
                 streamdeck.set_key_image(4, image=img)
         elif keys[5]:

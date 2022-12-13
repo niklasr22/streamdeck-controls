@@ -2,3 +2,5 @@
 /.vscode
 /__pycache__
 /testfiles
+/memory
+.DS_Store

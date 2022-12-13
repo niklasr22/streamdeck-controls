@@ -17,7 +17,7 @@ class SDSystem:
         self._deck: StreamDeck = None
         self._deck_thread: Thread = None
         self._running_app: _SDApp = None
-        self._back_btn_img = Image.open("testbild3.jpeg").rotate(270)
+        self._back_btn_img = Image.open("back_btn.jpeg").rotate(180)
         self._clear_key = Image.open("clear.jpeg")
         self._key_lock = Lock()
         self._connect()
@@ -121,7 +121,7 @@ class _SDApp(ABC):
         self._system: SDSystem = None
 
     def set_key(self, key: int, image: Image):
-        if key != 0:
+        if 0 < key < self._system.get_key_count():
             return self._system.set_key(key, image)
         return False
 
@@ -139,7 +139,11 @@ class _SDApp(ABC):
             keys_new = list(self._system.get_keys())
 
             keys = [kn and not ki for ki, kn in zip(keys_init, keys_new)]
-            self.update(keys_before, keys.copy())
+            try:
+                self.update(keys_before, keys.copy())
+            except Exception as e:
+                print(e)
+
             keys_init = [
                 False if not ki else not (ki and not kn)
                 for ki, kn in zip(keys_init, keys_new)
