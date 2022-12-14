@@ -58,27 +58,27 @@ class Memory(SDUserApp):
     def update(self, keys_before: list[bool], keys: list[bool]) -> None:
         for key, (pressed_before, pressed) in enumerate(zip(keys_before[1:], keys[1:])):
             key += 1
-            if (
-                pressed
-                and not pressed_before
-                and self._random_distribution[key - 1]
-                not in self._players[0] + self._players[1]
-            ):
-                self._cover_uncovered_pair()
-                self.set_key(key, self._get_memory_card_for_key(key))
-                self._uncovered_keys.append(key)
-                self._check_uncovered_pair()
-            elif len(self._players[0]) + len(self._players[1]) == len(
-                self._memory_cards
-            ):
-                # Game finished
-                if len(self._players[0]) > len(self._players[1]):
-                    print(f"Player 1 won ({len(self._players[0])})")
-                elif len(self._players[0]) < len(self._players[1]):
-                    print(f"Player 2 won ({len(self._players[0])})")
-                else:
-                    print("Draw")
-                self.init()
+            if pressed and not pressed_before:
+                if (
+                    self._random_distribution[key - 1]
+                    not in self._players[0] + self._players[1]
+                    and key not in self._uncovered_keys
+                ):
+                    self._cover_uncovered_pair()
+                    self.set_key(key, self._get_memory_card_for_key(key))
+                    self._uncovered_keys.append(key)
+                    self._check_uncovered_pair()
+                elif len(self._players[0]) + len(self._players[1]) == len(
+                    self._memory_cards
+                ):
+                    # Game finished
+                    if len(self._players[0]) > len(self._players[1]):
+                        print(f"Player 1 won ({len(self._players[0])})")
+                    elif len(self._players[0]) < len(self._players[1]):
+                        print(f"Player 2 won ({len(self._players[1])})")
+                    else:
+                        print("Draw")
+                    self.init()
 
 
 system = SDSystem()
