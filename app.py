@@ -34,6 +34,7 @@ class Memory(SDUserApp):
         self._current_player = 0
         for key in self.get_usable_keys():
             self.set_key(key, self._backside)
+        self._shuffle_memory()
 
     def _get_memory_card_for_key(self, key: int) -> Image:
         return self._memory_cards[self._random_distribution[key - 1]]
