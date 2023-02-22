@@ -45,8 +45,8 @@ class StreamDeck(ABC):
     def get_key_count(self) -> int:
         return self._KEY_COUNT
 
-    def get_keys(self) -> Iterator[bool]:
-        return self._keys.__iter__()
+    def get_keys(self) -> list[bool]:
+        return self._keys
 
     def run(self) -> None:
         self._running = True

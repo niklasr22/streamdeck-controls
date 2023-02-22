@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import Iterator
 from device import find_streamdecks
 from PIL import Image
@@ -10,16 +11,23 @@ class NoStreamDeckFoundExcpetion(Exception):
     pass
 
 
+class Orientation(Enum):
+    DEFAULT = 1
+    FLIPPED_180 = 2
+
+
 class SDSystem:
-    def __init__(self) -> None:
+    def __init__(self, orientation=Orientation.DEFAULT) -> None:
         self._apps: list[SDUserApp] = []
         self._app_thread: Thread = None
         self._deck: StreamDeck = None
         self._deck_thread: Thread = None
         self._running_app: _SDApp = None
-        self._back_btn_img = Image.open("back_btn.jpeg").rotate(180)
+        self._back_btn_img = Image.open("back_btn.jpeg")
         self._clear_key = Image.open("clear.jpeg")
         self._key_lock = Lock()
+        self._orientation = orientation
+        self._key_map = []
         self._connect()
 
     def _connect(self):
@@ -28,6 +36,7 @@ class SDSystem:
             raise NoStreamDeckFoundExcpetion("There is no streamdeck available")
         self._deck: StreamDeck = decks[0]
         print("Selected", self._deck)
+        self._create_key_map()
         self._deck.add_event_listener(self._system_key_listener)
 
     def start(self) -> None:
@@ -53,6 +62,14 @@ class SDSystem:
             self._deck.set_key_image(key, self._clear_key)
         if self._is_user_app_running():
             self.set_back_btn()
+
+    def _create_key_map(self):
+        key_indices = range(0, self.get_key_count())
+        match self._orientation:
+            case Orientation.FLIPPED_180:
+                self._key_map = list(reversed(key_indices))
+            case _:
+                self._key_map = list(key_indices)
 
     def _start_app(self, app: "_SDApp"):
         self._running_app: _SDApp = app
@@ -83,12 +100,18 @@ class SDSystem:
 
     def set_key(self, key: int, image: Image) -> bool:
         self._key_lock.acquire()
-        result = self._deck.set_key_image(key, image)
+        if self._orientation == Orientation.DEFAULT:
+            image = image.rotate(180)
+        result = self._deck.set_key_image(self._key_map[key], image)
         self._key_lock.release()
         return result
 
     def get_keys(self) -> Iterator[bool]:
-        return self._deck.get_keys()
+        match self._orientation:
+            case Orientation.FLIPPED_180:
+                return reversed(self._deck.get_keys())
+            case _:
+                return self._deck.get_keys().__iter__()
 
     def get_key_count(self) -> int:
         return self._deck.get_key_count()
@@ -96,7 +119,7 @@ class SDSystem:
     def _system_key_listener(
         self, deck: StreamDeck, keys_before: list[bool], keys: list[bool]
     ):
-        if keys[0] and self._is_user_app_running():
+        if keys[self._key_map[0]] and self._is_user_app_running():
             self._close_app()
 
     def _stop_deck(self):

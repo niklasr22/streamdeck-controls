@@ -1,6 +1,18 @@
+# general
 /.venv
 /.vscode
 /__pycache__
+
+# test files
 /testfiles
-/memory
+
+# macos files
 .DS_Store
+
+# apps
+/memory
+/kitchencontrols
+
+
+# app files
+config.json
