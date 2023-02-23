@@ -1,10 +1,10 @@
 import ctypes
 import io
-import hid
-
 from abc import ABC, abstractmethod
-from PIL import Image
 from typing import Callable, Iterator, Self
+
+import hid
+from PIL import Image
 
 
 class StreamDeck(ABC):
@@ -64,7 +64,7 @@ class StreamDeck(ABC):
                     ]
                     for listener in self._event_listeners:
                         listener(self, keys_before, self._keys.copy())
-        except KeyboardInterrupt:
+        except KeyboardInterrupt | hid.HIDException:
             self._running = False
 
     def stop(self) -> None:
