@@ -54,10 +54,16 @@ class KitchenControlsApp(SDUserApp):
             self._update_light_key()
 
     def _turn_alarm_off(self) -> None:
-        requests.get(f"{KITCHENPICO_ENDPOINT}/ignore")
+        try:
+            requests.get(f"{KITCHENPICO_ENDPOINT}/ignore")
+        except requests.exceptions.ConnectionError:
+            return
 
     def _turn_alarm_ignore_state(self) -> None:
-        requests.get(f"{KITCHENPICO_ENDPOINT}/reset")
+        try:
+            requests.get(f"{KITCHENPICO_ENDPOINT}/reset")
+        except requests.exceptions.ConnectionError:
+            return
 
     def _set_hue_lights_state(self, active) -> None:
         for light in KitchenControlsApp.HUE_LIGHTS:
@@ -72,7 +78,10 @@ class KitchenControlsApp(SDUserApp):
             time.sleep(10)
 
     def _show_temp(self) -> None:
-        temp_data = requests.get(f"{KITCHENPICO_ENDPOINT}").json()
+        try:
+            temp_data = requests.get(f"{KITCHENPICO_ENDPOINT}").json()
+        except requests.exceptions.ConnectionError:
+            return
         temp = round(temp_data["ambient_temperature"], 1)
 
         temp_img = self._clear_img.copy()
@@ -89,7 +98,10 @@ class KitchenControlsApp(SDUserApp):
         self.set_key(4, temp_img)
 
     def _check_light_state(self):
-        data = hue.get_group(self.HUE_GROUP)
+        try:
+            data = hue.get_group(self.HUE_GROUP)
+        except requests.exceptions.ConnectionError:
+            return
         self._lights_on = data["action"]["on"]
         self._update_light_key()
 
