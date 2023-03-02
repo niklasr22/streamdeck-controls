@@ -1,9 +1,8 @@
 from kitchencontrols import KitchenControlsApp
 from memory import Memory
-from sdsystem import Orientation, SDSystem
+from sdsystem import SDSystem
 
-
-system = SDSystem(orientation=Orientation.FLIPPED_180)
+system = SDSystem()
 system.register_app(
     Memory(
         "./memory/memory_pics/*.jpeg",

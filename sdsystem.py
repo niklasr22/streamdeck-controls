@@ -1,10 +1,13 @@
+import traceback
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Iterator
-from device import find_streamdecks
-from PIL import Image
-from streamdeck import StreamDeck
 from threading import Lock, Thread
+from typing import Iterator
+
+from PIL import Image
+
+from device import find_streamdecks
+from streamdeck import StreamDeck
 
 
 class NoStreamDeckFoundExcpetion(Exception):
@@ -164,8 +167,8 @@ class _SDApp(ABC):
             keys = [kn and not ki for ki, kn in zip(keys_init, keys_new)]
             try:
                 self.update(keys_before, keys.copy())
-            except Exception as e:
-                print(e)
+            except Exception:
+                print(traceback.format_exc())
 
             keys_init = [
                 False if not ki else not (ki and not kn)
