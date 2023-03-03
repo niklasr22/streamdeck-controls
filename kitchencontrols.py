@@ -45,6 +45,9 @@ class KitchenControlsApp(SDUserApp):
         self._data_thread = Thread(target=self._fetch_data)
         self._data_thread.start()
 
+    def close(self) -> None:
+        self._data_thread.join()
+
     def update(self, keys_before: list[bool], keys: list[bool]) -> None:
         if keys[1] and not keys_before[1]:
             # turn alarm off

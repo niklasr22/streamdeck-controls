@@ -178,6 +178,7 @@ class _SDApp(ABC):
 
     def stop(self) -> None:
         self._running = False
+        self.close()
 
     def closed(self) -> None:
         self._system = None
@@ -188,6 +189,9 @@ class _SDApp(ABC):
 
     @abstractmethod
     def update(self, keys_before: list[bool], keys: list[bool]) -> None:
+        ...
+
+    def close(self) -> None:
         ...
 
 
