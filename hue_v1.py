@@ -1,8 +1,10 @@
 import json
 
+from pathlib import Path
+
 import requests
 
-with open("config.json") as config_file:
+with (Path(__file__).parent / "config.json").open() as config_file:
     config = json.load(config_file)
 
 HUE_BRIDGE_URL = config["hue"]["api_endpoint"]

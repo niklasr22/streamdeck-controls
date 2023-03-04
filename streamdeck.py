@@ -64,7 +64,7 @@ class StreamDeck(ABC):
                     ]
                     for listener in self._event_listeners:
                         listener(self, keys_before, self._keys.copy())
-        except KeyboardInterrupt | hid.HIDException:
+        except (KeyboardInterrupt, hid.HIDException):
             self._running = False
 
     def stop(self) -> None:
