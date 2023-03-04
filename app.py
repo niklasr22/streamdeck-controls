@@ -2,7 +2,7 @@ from kitchencontrols import KitchenControlsApp
 from memory import Memory
 from sdsystem import SDSystem
 
-system = SDSystem()
+system = SDSystem(timeout=600)
 system.register_app(
     Memory(
         "./memory/memory_pics/*.jpeg",

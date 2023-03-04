@@ -20,7 +20,7 @@ class Orientation(Enum):
 
 
 class SDSystem:
-    def __init__(self, orientation=Orientation.DEFAULT) -> None:
+    def __init__(self, orientation=Orientation.DEFAULT, timeout: int = 0) -> None:
         self._apps: list[SDUserApp] = []
         self._app_thread: Thread = None
         self._deck: StreamDeck = None
@@ -30,6 +30,7 @@ class SDSystem:
         self._clear_key = Image.open("clear.jpeg")
         self._key_lock = Lock()
         self._orientation = orientation
+        self._default_timeout = timeout
         self._key_map = []
         self._connect()
 
@@ -43,7 +44,7 @@ class SDSystem:
         self._deck.add_event_listener(self._system_key_listener)
 
     def start(self) -> None:
-        self._deck.set_standby_timeout(0)
+        self._deck.set_standby_timeout(self._default_timeout)
         self._deck_thread = Thread(target=self._deck.run)
         self._deck_thread.start()
         try:
