@@ -208,12 +208,13 @@ class SDUserApp(_SDApp, ABC):
     def get_icon(self) -> Image:
         ...
 
+    @staticmethod
     @cache
     def font(size: int):
         return ImageFont.truetype("./kitchencontrols/roboto.ttf", size)
 
+    @staticmethod
     def generate_labeled_img(
-        self,
         base: Image,
         label: str,
         position: tuple[int, int] = (36, 52),
@@ -228,7 +229,7 @@ class SDUserApp(_SDApp, ABC):
             bbox = draw.textbbox(
                 text_pos,
                 label,
-                font=self.font(font_size),
+                font=SDUserApp.font(font_size),
                 anchor="mm",
                 align="center",
             )
@@ -237,7 +238,7 @@ class SDUserApp(_SDApp, ABC):
             text_pos,
             label,
             color,
-            font=self.font(font_size),
+            font=SDUserApp.font(font_size),
             anchor="mm",
             align="center",
         )
