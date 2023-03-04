@@ -11,9 +11,8 @@ KITCHENPICO_ENDPOINT = "http://kitchenpico"
 
 
 class KitchenControlsApp(SDUserApp):
-    HUE_LIGHTS = [5, 6, 7]
-    HUE_KITCHEN_GROUP = 2  # kitchen group id
-    HUE_BATH_GROUP = 4  # bath group id
+    HUE_KITCHEN_GROUP = "2"  # kitchen group id
+    HUE_BATH_GROUP = "4"  # bath group id
 
     KEY_IGNORE_HOT_STOVE = 1
     KEY_RESET_IGNORE_HOT_STOVE = 2
@@ -96,10 +95,6 @@ class KitchenControlsApp(SDUserApp):
             requests.get(f"{KITCHENPICO_ENDPOINT}/reset")
         except requests.exceptions.ConnectionError:
             return
-
-    def _set_hue_lights_state(self, active) -> None:
-        for light in KitchenControlsApp.HUE_LIGHTS:
-            hue_v1.set_light(light, active)
 
     def _fetch_data(self) -> None:
 
