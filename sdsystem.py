@@ -1,10 +1,12 @@
+import subprocess
 import traceback
 from abc import ABC, abstractmethod
 from enum import Enum
+from functools import cache
 from threading import Lock, Thread
 from typing import Iterator
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 from device import find_streamdecks
 from streamdeck import StreamDeck
@@ -21,13 +23,13 @@ class Orientation(Enum):
 
 class SDSystem:
     def __init__(self, orientation=Orientation.DEFAULT, timeout: int = 0) -> None:
-        self._apps: list[SDUserApp] = []
+        self._apps: list[SDUserApp] = [_Settings()]
         self._app_thread: Thread = None
         self._deck: StreamDeck = None
         self._deck_thread: Thread = None
         self._running_app: _SDApp = None
-        self._back_btn_img = Image.open("back_btn.jpeg")
-        self._clear_key = Image.open("clear.jpeg")
+        self._back_btn_img = Image.open("./imgs/back_btn.jpeg")
+        self._clear_key = Image.open("./imgs/clear.jpeg")
         self._key_lock = Lock()
         self._orientation = orientation
         self._default_timeout = timeout
@@ -120,9 +122,7 @@ class SDSystem:
     def get_key_count(self) -> int:
         return self._deck.get_key_count()
 
-    def _system_key_listener(
-        self, deck: StreamDeck, keys_before: list[bool], keys: list[bool]
-    ):
+    def _system_key_listener(self, deck: StreamDeck, keys_before: list[bool], keys: list[bool]):
         if keys[self._key_map[0]] and self._is_user_app_running():
             self._close_app()
 
@@ -171,10 +171,7 @@ class _SDApp(ABC):
             except Exception:
                 print(traceback.format_exc())
 
-            keys_init = [
-                False if not ki else not (ki and not kn)
-                for ki, kn in zip(keys_init, keys_new)
-            ]
+            keys_init = [False if not ki else not (ki and not kn) for ki, kn in zip(keys_init, keys_new)]
             keys_before = keys
 
     def stop(self) -> None:
@@ -211,6 +208,42 @@ class SDUserApp(_SDApp, ABC):
     def get_icon(self) -> Image:
         ...
 
+    @cache
+    def _font(size: int):
+        return ImageFont.truetype("./kitchencontrols/roboto.ttf", size)
+
+    def _generate_labeled_img(
+        self,
+        base: Image,
+        label: str,
+        position: tuple[int, int] = (36, 52),
+        color: tuple[int, int, int] = (255, 255, 255),
+        font_size: int = 14,
+        background: str | None = "#00000080",
+    ) -> Image:
+        labeled_img = base.copy()
+        draw = ImageDraw.Draw(labeled_img)
+        text_pos = position
+        if background is not None:
+            bbox = draw.textbbox(
+                text_pos,
+                label,
+                font=self._font(font_size),
+                anchor="mm",
+                align="center",
+            )
+            draw.rectangle(bbox, fill=background)
+        draw.text(
+            text_pos,
+            label,
+            color,
+            font=self._font(font_size),
+            anchor="mm",
+            align="center",
+        )
+
+        return labeled_img
+
 
 class _SDSystemApp(_SDApp, ABC):
     def set_key(self, key: int, image: Image):
@@ -225,9 +258,7 @@ class _LaunchPad(_SDSystemApp):
     def init(self) -> None:
         print("Started Launchpad")
         self.apps.clear()
-        for key, app in enumerate(
-            self._system.get_apps()[: self._system.get_key_count()]
-        ):
+        for key, app in enumerate(self._system.get_apps()[: self._system.get_key_count()]):
             self.set_key(key, app.get_icon())
             self.apps[key] = app
 
@@ -237,3 +268,27 @@ class _LaunchPad(_SDSystemApp):
                 self._system._start_app(self.apps[key])
                 self.stop()
                 break
+
+
+class _Settings(SDUserApp):
+
+    KEY_UPDATE = 1
+
+    def __init__(self) -> None:
+        super().__init__("Settings")
+        self._icon = Image.open("./imgs/settings.jpeg")
+        self._clear_key = Image.open("./imgs/clear.jpeg")
+
+        self._icon_update = Image.open("./imgs/update.jpeg")
+
+    def get_icon(self) -> Image:
+        return self._icon
+
+    def init(self) -> None:
+        print("Started Settings")
+
+        self.set_key(self.KEY_UPDATE, self._icon_update)
+
+    def update(self, keys_before: list[bool], keys: list[bool]) -> None:
+        if not keys[self.KEY_UPDATE] and keys_before[self.KEY_UPDATE]:
+            subprocess.call(["sh", "./scripts/update.sh"])

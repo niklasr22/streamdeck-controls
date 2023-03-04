@@ -1,5 +1,4 @@
 import json
-
 from pathlib import Path
 
 import requests
@@ -12,16 +11,11 @@ HUE_USERNAME = config["hue"]["username"]
 HUE_ENDPOINT = f"{HUE_BRIDGE_URL}/{HUE_USERNAME}"
 
 
-def get_rooms() -> list:
+def get_groups(rooms_only=False) -> list:
     data = requests.get(f"{HUE_ENDPOINT}/groups").json()
-    return {g: d for g, d in data.items() if d["type"] == "Room"}
-
-
-"""def get_scenes(group: int | None = None) -> list:
-    data = requests.get(f"{HUE_ENDPOINT}/scenes").json()
-    if group is not None:
+    if rooms_only:
         return {g: d for g, d in data.items() if d["type"] == "Room"}
-    return data"""
+    return data
 
 
 def set_light(light: int, active: bool) -> None:

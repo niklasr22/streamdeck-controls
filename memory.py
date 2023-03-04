@@ -6,9 +6,7 @@ from PIL import Image
 
 
 class Memory(SDUserApp):
-    def __init__(
-        self, memory_pics_dir: str, icon_path: str, backside_path: str
-    ) -> None:
+    def __init__(self, memory_pics_dir: str, icon_path: str, backside_path: str) -> None:
         super().__init__("Memory")
         self._icon = Image.open(icon_path)
 
@@ -44,9 +42,7 @@ class Memory(SDUserApp):
             and self._random_distribution[self._uncovered_keys[0] - 1]
             == self._random_distribution[self._uncovered_keys[1] - 1]
         ):
-            self._players[self._current_player].append(
-                self._random_distribution[self._uncovered_keys[0] - 1]
-            )
+            self._players[self._current_player].append(self._random_distribution[self._uncovered_keys[0] - 1])
             self._uncovered_keys.clear()
 
     def _cover_uncovered_pair(self):
@@ -60,17 +56,14 @@ class Memory(SDUserApp):
             key += 1
             if pressed and not pressed_before:
                 if (
-                    self._random_distribution[key - 1]
-                    not in self._players[0] + self._players[1]
+                    self._random_distribution[key - 1] not in self._players[0] + self._players[1]
                     and key not in self._uncovered_keys
                 ):
                     self._cover_uncovered_pair()
                     self.set_key(key, self._get_memory_card_for_key(key))
                     self._uncovered_keys.append(key)
                     self._check_uncovered_pair()
-                elif len(self._players[0]) + len(self._players[1]) == len(
-                    self._memory_cards
-                ):
+                elif len(self._players[0]) + len(self._players[1]) == len(self._memory_cards):
                     # Game finished
                     if len(self._players[0]) > len(self._players[1]):
                         print(f"Player 1 won ({len(self._players[0])})")

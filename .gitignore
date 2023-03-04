@@ -13,6 +13,8 @@
 /memory
 /kitchencontrols
 
+/scripts/*
+
 
 # app files
 config.json

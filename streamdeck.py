@@ -15,9 +15,7 @@ class StreamDeck(ABC):
     _IMAGE_CMD_HEADER_LENGTH: int = 0
     _IMAGE_CMD_MAX_PAYLOAD_LENGTH: int = 0
 
-    def __init__(
-        self, device: hid.Device, read_interval: int = 100, buffer_size: int = 1024
-    ) -> None:
+    def __init__(self, device: hid.Device, read_interval: int = 100, buffer_size: int = 1024) -> None:
         self._device = device
         self._read_interval = read_interval
         self._buffer_size = buffer_size
@@ -56,11 +54,7 @@ class StreamDeck(ABC):
                 if len(data) > 0:
                     keys_before = self._keys.copy()
                     self._keys = [
-                        bool(k)
-                        for k in data[
-                            self._KEY_DATA_OFFSET : self._KEY_DATA_OFFSET
-                            + self._KEY_COUNT
-                        ]
+                        bool(k) for k in data[self._KEY_DATA_OFFSET : self._KEY_DATA_OFFSET + self._KEY_COUNT]
                     ]
                     for listener in self._event_listeners:
                         listener(self, keys_before, self._keys.copy())
@@ -70,9 +64,7 @@ class StreamDeck(ABC):
     def stop(self) -> None:
         self._running = False
 
-    def add_event_listener(
-        self, callback: Callable[[Self, list[bool], list[bool]], None]
-    ) -> None:
+    def add_event_listener(self, callback: Callable[[Self, list[bool], list[bool]], None]) -> None:
         self._event_listeners.append(callback)
 
     def clear_event_listeners(self) -> None:
@@ -130,9 +122,7 @@ class StreamDeckMk2(StreamDeck):
     _IMAGE_CMD_HEADER_LENGTH: int = 8
     _IMAGE_CMD_MAX_PAYLOAD_LENGTH: int = 1016
 
-    def __init__(
-        self, device: hid.Device, read_interval: int = 60, buffer_size: int = 512
-    ) -> None:
+    def __init__(self, device: hid.Device, read_interval: int = 60, buffer_size: int = 512) -> None:
         super().__init__(device, read_interval, buffer_size)
 
     def set_brightness(self, percentage: int) -> None:
