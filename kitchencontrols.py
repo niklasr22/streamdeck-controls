@@ -160,6 +160,6 @@ class KitchenControlsApp(SDUserApp):
 
     def _update_bath_light_key(self):
         if self._bath_lights_on:
-            self.set_key(self.KEY_BATH_LAMP, self._icon_bath_lamp)
-        else:
             self.set_key(self.KEY_BATH_LAMP, self._icon_fan)
+        else:
+            self.set_key(self.KEY_BATH_LAMP, self._icon_bath_lamp)
