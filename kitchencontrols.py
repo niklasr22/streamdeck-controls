@@ -36,7 +36,7 @@ class KitchenControlsApp(SDUserApp):
 
         # bath room
         self._icon_fan = self._generate_labeled_img(Image.open("./kitchencontrols/fan.jpeg"), "WC")
-        self._bath_lamp = self._generate_labeled_img(self._icon_lamp_on, "WC")
+        self._icon_bath_lamp = self._generate_labeled_img(self._icon_lamp_on, "WC")
 
         self._kitchen_lights_on = False
         self._bath_lights_on = False
@@ -166,6 +166,6 @@ class KitchenControlsApp(SDUserApp):
 
     def _update_bath_light_key(self):
         if self._bath_lights_on:
-            self.set_key(self.KEY_BATH_LAMP, self._icon_lamp_off)
+            self.set_key(self.KEY_BATH_LAMP, self._icon_bath_lamp)
         else:
             self.set_key(self.KEY_BATH_LAMP, self._icon_fan)
