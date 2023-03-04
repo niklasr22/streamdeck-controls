@@ -1,9 +1,8 @@
 import time
-from functools import cache
 from threading import Thread
 
 import requests
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 import hue_v1
 from sdsystem import SDUserApp
@@ -35,8 +34,8 @@ class KitchenControlsApp(SDUserApp):
         self._clear_img = Image.open("./imgs/clear.jpeg")
 
         # bath room
-        self._icon_fan = self._generate_labeled_img(Image.open("./kitchencontrols/fan.jpeg"), "WC")
-        self._icon_bath_lamp = self._generate_labeled_img(self._icon_lamp_on, "WC")
+        self._icon_fan = SDUserApp.generate_labeled_img(Image.open("./kitchencontrols/fan.jpeg"), "WC")
+        self._icon_bath_lamp = SDUserApp.generate_labeled_img(self._icon_lamp_on, "WC")
 
         self._kitchen_lights_on = False
         self._bath_lights_on = False
@@ -122,7 +121,7 @@ class KitchenControlsApp(SDUserApp):
             (36, 36),
             f"{temp}\n°C\n{label}",
             (255, 255, 255),
-            font=self._font(20),
+            font=SDUserApp.font(20),
             anchor="mm",
             align="center",
         )
@@ -155,7 +154,7 @@ class KitchenControlsApp(SDUserApp):
         for i, scene_id in enumerate(list(room_scenes.keys())[:5]):
             scene = room_scenes[scene_id]
             key = 10 + i
-            self.set_key(key, self._generate_labeled_img(self._icon_lamp_on, scene["name"]))
+            self.set_key(key, SDUserApp.generate_labeled_img(self._icon_lamp_on, scene["name"]))
             self._scenes[key] = scene_id
 
     def _update_kitchen_light_key(self):
