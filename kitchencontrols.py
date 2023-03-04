@@ -143,7 +143,7 @@ class KitchenControlsApp(SDUserApp):
         self._update_kitchen_light_key()
 
     def _update_scenes(self):
-        room_scenes = hue_v1.get_scenes(room=self.HUE_GROUP)
+        room_scenes = hue_v1.get_scenes(room=self.HUE_KITCHEN_GROUP)
 
         self._scenes.clear()
         for i, scene_id in enumerate(list(room_scenes.keys())[:5]):
