@@ -55,7 +55,7 @@ class Memory(SDUserApp):
             framed = self._get_memory_card_for_key(k).copy()
             draw = ImageDraw.Draw(framed)
             draw.rounded_rectangle(
-                (0, 0, 71, 71), outline=self.PLAYER_COLORS[self._current_player], fill="#00000000", width=3, radius=7
+                (0, 0, 71, 71), outline=self.PLAYER_COLORS[self._current_player], fill=None, width=3, radius=7
             )
             self.set_key(k, framed)
 
