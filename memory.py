@@ -47,7 +47,7 @@ class Memory(SDUserApp):
             == self._random_distribution[self._uncovered_keys[1] - 1]
         ):
             self._players[self._current_player].append(self._random_distribution[self._uncovered_keys[0] - 1])
-            self._add_frame_to_valid_pair()
+            # self._add_frame_to_valid_pair()
             self._uncovered_keys.clear()
 
     def _add_frame_to_valid_pair(self):
