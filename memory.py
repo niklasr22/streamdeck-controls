@@ -52,11 +52,11 @@ class Memory(SDUserApp):
 
     def _add_frame_to_valid_pair(self):
         for k in self._uncovered_keys:
-            framed = self._get_memory_card_for_key(k).copy().rotate(90)
-            """draw = ImageDraw.Draw(framed)
-            draw.rectangle(
-                (0, 0, 72, 72), outline=self.PLAYER_COLORS[self._current_player], fill="#00000000", width=3, radius=7
-            )"""
+            framed = self._get_memory_card_for_key(k).copy()
+            draw = ImageDraw.Draw(framed)
+            draw.rounded_rectangle(
+                (0, 0, 71, 71), outline=self.PLAYER_COLORS[self._current_player], fill="#00000000", width=3, radius=7
+            )
             self.set_key(k, framed)
 
     def _cover_uncovered_pair(self):
