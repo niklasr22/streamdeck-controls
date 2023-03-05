@@ -47,16 +47,16 @@ class Memory(SDUserApp):
             == self._random_distribution[self._uncovered_keys[1] - 1]
         ):
             self._players[self._current_player].append(self._random_distribution[self._uncovered_keys[0] - 1])
-            # self._add_frame_to_valid_pair()
+            self._add_frame_to_valid_pair()
             self._uncovered_keys.clear()
 
     def _add_frame_to_valid_pair(self):
         for k in self._uncovered_keys:
-            framed = self._get_memory_card_for_key(k).copy()
-            draw = ImageDraw.Draw(framed)
+            framed = self._get_memory_card_for_key(k).copy().rotate(90)
+            """draw = ImageDraw.Draw(framed)
             draw.rectangle(
                 (0, 0, 72, 72), outline=self.PLAYER_COLORS[self._current_player], fill="#00000000", width=3, radius=7
-            )
+            )"""
             self.set_key(k, framed)
 
     def _cover_uncovered_pair(self):
@@ -67,7 +67,7 @@ class Memory(SDUserApp):
 
     def update(self, keys_before: list[bool], keys: list[bool]) -> None:
         for key, (pressed_before, pressed) in enumerate(zip(keys_before[1:], keys[1:])):
-            key += 1
+            key += 1  # (start iterating at key 1)
             if pressed and not pressed_before:
                 if (
                     self._random_distribution[key - 1] not in self._players[0] + self._players[1]
