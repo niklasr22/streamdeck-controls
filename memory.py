@@ -1,11 +1,15 @@
 import glob
 import random
 
+from PIL import Image, ImageDraw
+
 from sdsystem import SDUserApp
-from PIL import Image
 
 
 class Memory(SDUserApp):
+
+    PLAYER_COLORS = ["#FF0000", "#0000FF"]
+
     def __init__(self, memory_pics_dir: str, icon_path: str, backside_path: str) -> None:
         super().__init__("Memory")
         self._icon = Image.open(icon_path)
@@ -43,7 +47,17 @@ class Memory(SDUserApp):
             == self._random_distribution[self._uncovered_keys[1] - 1]
         ):
             self._players[self._current_player].append(self._random_distribution[self._uncovered_keys[0] - 1])
+            self._add_frame_to_valid_pair()
             self._uncovered_keys.clear()
+
+    def _add_frame_to_valid_pair(self):
+        for k in self._uncovered_keys:
+            framed = self._get_memory_card_for_key(k).copy()
+            draw = ImageDraw.Draw(framed)
+            draw.rectangle(
+                (0, 0, 72, 72), outline=self.PLAYER_COLORS[self._current_player], fill="#00000000", width=3, radius=7
+            )
+            self.set_key(k, framed)
 
     def _cover_uncovered_pair(self):
         if len(self._uncovered_keys) == 2:
