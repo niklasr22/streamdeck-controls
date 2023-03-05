@@ -127,11 +127,14 @@ class KitchenControlsApp(SDUserApp):
             temp_data = requests.get(f"{KITCHENPICO_ENDPOINT}").json()
         except requests.exceptions.ConnectionError:
             return
-        temp_ambient = round(temp_data["ambient_temperature"], 1)
-        temp_object = round(temp_data["object_temperature_1"], 1)
+        try:
+            temp_ambient = round(temp_data["ambient_temperature"], 1)
+            temp_object = round(temp_data["object_temperature_1"], 1)
 
-        self.set_key(self.KEY_ROOM_TEMP, self._generate_temp_img(temp_ambient, "Room"))
-        self.set_key(self.KEY_OBJECT_TEMP, self._generate_temp_img(temp_object, "Range"))
+            self.set_key(self.KEY_ROOM_TEMP, self._generate_temp_img(temp_ambient, "Room"))
+            self.set_key(self.KEY_OBJECT_TEMP, self._generate_temp_img(temp_object, "Stove"))
+        except KeyError:
+            ...
 
     def _check_light_states(self):
         try:
