@@ -144,6 +144,7 @@ class KitchenControlsApp(SDUserApp):
         self._kitchen_lights_on = groups[self.HUE_KITCHEN_GROUP]["action"]["on"]
         self._bath_lights_on = groups[self.HUE_BATH_GROUP]["action"]["on"]
         self._update_kitchen_light_key()
+        self._update_bath_light_key()
 
     def _update_scenes(self):
         room_scenes = hue_v1.get_scenes(room=self.HUE_KITCHEN_GROUP)
