@@ -24,7 +24,6 @@ class Orientation(Enum):
 class SDSystem:
     def __init__(self, orientation=Orientation.DEFAULT, timeout: int = 0) -> None:
         self._apps: list[SDUserApp] = [_Settings()]
-        self._app_thread: Thread = None
         self._deck: StreamDeck = None
         self._deck_thread: Thread = None
         self._running_app: _SDApp = None
@@ -80,26 +79,19 @@ class SDSystem:
     def _start_app(self, app: "_SDApp"):
         self._running_app: _SDApp = app
         self.clear_deck()
-        self._app_thread = Thread(target=self._running_app.start, args=[self])
-        self._app_thread.start()
+        self._running_app.start()
 
     def _close_app(self, shutdown=False):
         if self._running_app:
             self._running_app.stop()
-            if self._app_thread and self._app_thread.is_alive():
-                self._app_thread.join(2.0)
             self._running_app.closed()
+            self._running_app = None
 
         if not shutdown:
             self._start_app(_LaunchPad())
 
     def _is_user_app_running(self) -> bool:
-        return (
-            self._app_thread
-            and self._app_thread.is_alive()
-            and self._running_app
-            and issubclass(type(self._running_app), SDUserApp)
-        )
+        return self._running_app and issubclass(type(self._running_app), SDUserApp)
 
     def set_back_btn(self):
         self.set_key(0, self._back_btn_img)
@@ -125,6 +117,9 @@ class SDSystem:
     def _system_key_listener(self, deck: StreamDeck, keys_before: list[bool], keys: list[bool]):
         if keys[self._key_map[0]] and self._is_user_app_running():
             self._close_app()
+            return
+        if self._running_app:
+            self._running_app.key_event(keys_before, keys)
 
     def _stop_deck(self):
         if self._deck:
@@ -160,19 +155,8 @@ class _SDApp(ABC):
         self._system = system
         self.init()
 
-        keys_init = list(self._system.get_keys())
-        keys_before = [False] * self._system.get_key_count()
-        while self._running:
-            keys_new = list(self._system.get_keys())
-
-            keys = [kn and not ki for ki, kn in zip(keys_init, keys_new)]
-            try:
-                self.update(keys_before, keys.copy())
-            except Exception:
-                print(traceback.format_exc())
-
-            keys_init = [False if not ki else not (ki and not kn) for ki, kn in zip(keys_init, keys_new)]
-            keys_before = keys
+    def key_event(self, keys_before: list[bool], keys: list[bool]):
+        self.update(keys_before, keys)
 
     def stop(self) -> None:
         self._running = False
