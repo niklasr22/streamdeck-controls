@@ -132,7 +132,7 @@ class KitchenControlsApp(SDUserApp):
             temp_object = round(temp_data["object_temperature_1"], 1)
 
             self.set_key(self.KEY_ROOM_TEMP, self._generate_temp_img(temp_ambient, "Room"))
-            self.set_key(self.KEY_OBJECT_TEMP, self._generate_temp_img(temp_object, "Object"))
+            self.set_key(self.KEY_OBJECT_TEMP, self._generate_temp_img(temp_object, "Stove"))
         except KeyError:
             ...
 
