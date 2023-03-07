@@ -115,7 +115,7 @@ class SDSystem:
         return self._deck.get_key_count()
 
     def _system_key_listener(self, deck: StreamDeck, keys_before: list[bool], keys: list[bool]):
-        if keys[self._key_map[0]] and self._is_user_app_running():
+        if keys_before[self._key_map[0]] and not keys[self._key_map[0]] and self._is_user_app_running():
             self._close_app()
             return
         if self._running_app:
