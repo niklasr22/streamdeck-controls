@@ -79,7 +79,7 @@ class SDSystem:
     def _start_app(self, app: "_SDApp"):
         self._running_app: _SDApp = app
         self.clear_deck()
-        self._running_app.start()
+        self._running_app.start(self)
 
     def _close_app(self, shutdown=False):
         if self._running_app:
