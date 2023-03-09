@@ -20,3 +20,6 @@ class RgbRecovery(SDUserApp):
         print("Started Kitchen RGB Recovery")
         subprocess.call(["sh", "./scripts/restart_leds.sh"])
         self.close_app()
+
+    def update(self, keys_before: list[bool], keys: list[bool]) -> None:
+        ...
