@@ -26,13 +26,17 @@ class StreamDeck(ABC):
     def __str__(self) -> str:
         return f"{self._device.product} ({self._device.manufacturer})"
 
-    @abstractmethod
     def set_brightness(self, percentage: int) -> None:
-        ...
+        self._brightness = percentage
 
-    @abstractmethod
+    def get_brightness(self) -> int:
+        return self._brightness
+
     def set_standby_timeout(self, timeout_secs: int) -> None:
-        ...
+        self._timeout = timeout_secs
+
+    def get_standby_timeout(self) -> None:
+        return self._timeout
 
     @abstractmethod
     def _get_send_image_command_header(
@@ -126,11 +130,13 @@ class StreamDeckMk2(StreamDeck):
         super().__init__(device, read_interval, buffer_size)
 
     def set_brightness(self, percentage: int) -> None:
+        super().set_brightness(percentage)
         # command 0x03 0x08 (percentage as byte) ...
         command = bytes([0x03, 0x08, percentage] + [0x0] * 29)
         self._device.send_feature_report(command)
 
     def set_standby_timeout(self, timeout_secs: int) -> None:
+        super().set_standby_timeout(timeout_secs)
         command = bytes(
             [
                 0x03,

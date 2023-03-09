@@ -10,13 +10,13 @@ class Memory(SDUserApp):
 
     PLAYER_COLORS = ["#FF0000", "#0000FF"]
 
-    def __init__(self, memory_pics_dir: str, icon_path: str, backside_path: str) -> None:
+    def __init__(self) -> None:
         super().__init__("Memory")
-        self._icon = Image.open(icon_path)
+        self._icon = Image.open("./memory/memory_backside.jpeg")
 
-        self._backside = Image.open(backside_path)
+        self._backside = Image.open("./memory/memory_backside.jpeg")
         self._memory_cards: list[Image.Image] = []
-        for file in glob.glob(memory_pics_dir):
+        for file in glob.glob("./memory/memory_pics/*.jpeg"):
             self._memory_cards.append(Image.open(file).resize((72, 72)))
 
         self._shuffle_memory()

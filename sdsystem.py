@@ -49,7 +49,7 @@ class SDSystem:
         self._deck_thread.start()
         try:
             print("Started StreamDeck System")
-            self._close_app()
+            self.close_app()
             self._deck_thread.join()
         except KeyboardInterrupt:
             self.close()
@@ -80,7 +80,7 @@ class SDSystem:
         self.clear_deck()
         self._running_app.start(self)
 
-    def _close_app(self, shutdown=False):
+    def close_app(self, shutdown=False):
         if self._running_app:
             self._running_app.stop()
             self._running_app.closed()
@@ -115,12 +115,18 @@ class SDSystem:
 
     def _system_key_listener(self, deck: StreamDeck, keys_before: list[bool], keys: list[bool]):
         if keys_before[self._key_map[0]] and not keys[self._key_map[0]] and self._is_user_app_running():
-            self._close_app()
+            self.close_app()
             return
         if self._running_app:
             self._running_app.key_event(keys_before, keys)
 
-    def _stop_deck(self):
+    def set_brightness(self, brightness: int) -> None:
+        self._deck.set_brightness(brightness)
+
+    def get_brightness(self) -> int:
+        self._deck.get_brightness()
+
+    def _stop_deck(self) -> None:
         if self._deck:
             self._deck.stop()
             if self._deck_thread and self._deck_thread.is_alive():
@@ -128,7 +134,7 @@ class SDSystem:
 
     def close(self) -> None:
         self._deck.set_standby_timeout(1)
-        self._close_app(shutdown=True)
+        self.close_app(shutdown=True)
         self.clear_deck()
         self._stop_deck()
 
@@ -157,9 +163,12 @@ class _SDApp(ABC):
     def key_event(self, keys_before: list[bool], keys: list[bool]):
         self.update(keys_before, keys)
 
+    def close_app(self):
+        self._system.close_app()
+
     def stop(self) -> None:
         self._running = False
-        self.close()
+        self.on_close()
 
     def closed(self) -> None:
         self._system = None
@@ -172,7 +181,7 @@ class _SDApp(ABC):
     def update(self, keys_before: list[bool], keys: list[bool]) -> None:
         ...
 
-    def close(self) -> None:
+    def on_close(self) -> None:
         ...
 
 
@@ -243,7 +252,7 @@ class _LaunchPad(_SDSystemApp):
         print("Started Launchpad")
         self.apps.clear()
         for key, app in enumerate(self._system.get_apps()[: self._system.get_key_count()]):
-            self.set_key(key, app.get_icon())
+            self.set_key(key, SDUserApp.generate_labeled_img(app.get_icon(), app.get_name(), (36, 60)))
             self.apps[key] = app
 
     def update(self, keys_before: list[bool], keys: list[bool]) -> None:
