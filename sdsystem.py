@@ -252,7 +252,7 @@ class _LaunchPad(_SDSystemApp):
         print("Started Launchpad")
         self.apps.clear()
         for key, app in enumerate(self._system.get_apps()[: self._system.get_key_count()]):
-            self.set_key(key, SDUserApp.generate_labeled_img(app.get_icon(), app.get_name(), (36, 60)))
+            self.set_key(key, app.get_icon())
             self.apps[key] = app
 
     def update(self, keys_before: list[bool], keys: list[bool]) -> None:
