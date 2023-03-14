@@ -22,7 +22,7 @@ class Orientation(Enum):
 
 class SDSystem:
     def __init__(self, orientation=Orientation.DEFAULT, timeout: int = 0) -> None:
-        self._apps: list[SDUserApp] = [_Settings()]
+        self._apps: list[SDUserApp] = []
         self._deck: StreamDeck = None
         self._deck_thread: Thread = None
         self._running_app: _SDApp = None
@@ -261,27 +261,3 @@ class _LaunchPad(_SDSystemApp):
                 self._system._start_app(self.apps[key])
                 self.stop()
                 break
-
-
-class _Settings(SDUserApp):
-
-    KEY_UPDATE = 1
-
-    def __init__(self) -> None:
-        super().__init__("Settings")
-        self._icon = Image.open("./imgs/settings.jpeg")
-        self._clear_key = Image.open("./imgs/clear.jpeg")
-
-        self._icon_update = Image.open("./imgs/update.jpeg")
-
-    def get_icon(self) -> Image:
-        return self._icon
-
-    def init(self) -> None:
-        print("Started Settings")
-
-        self.set_key(self.KEY_UPDATE, self._icon_update)
-
-    def update(self, keys_before: list[bool], keys: list[bool]) -> None:
-        if not keys[self.KEY_UPDATE] and keys_before[self.KEY_UPDATE]:
-            subprocess.call(["sh", "./scripts/update.sh"])
