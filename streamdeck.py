@@ -1,7 +1,6 @@
-import ctypes
 import io
 from abc import ABC, abstractmethod
-from typing import Callable, Iterator, Self
+from typing import Callable, Self
 
 import hid
 from PIL import Image

@@ -7,7 +7,7 @@ from typing import Iterator
 
 from PIL import Image, ImageDraw, ImageFont
 
-from device import find_streamdecks
+from simple_device_test import find_streamdecks
 from streamdeck import StreamDeck
 
 
