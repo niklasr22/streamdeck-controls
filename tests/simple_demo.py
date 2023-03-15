@@ -1,9 +1,10 @@
-import hid
 from PIL import Image
-from streamdeck import StreamDeck, StreamDeckMk2
+
+from sd_controls.sdsystem import SDSystem
+from sd_controls.streamdeck import StreamDeck, StreamDeckMk2
 
 if __name__ == "__main__":
-    streamdecks = find_streamdecks()
+    streamdecks = SDSystem.find_streamdecks()
     if len(streamdecks) == 0:
         print("No streamdecks discovered")
         exit()
