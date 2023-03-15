@@ -19,8 +19,7 @@
 # app files
 config.json
 
-# eggs
+# builds and cache
 *.egg-info
-
-# pycache
 **/__pycache__
+dist
