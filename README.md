@@ -4,6 +4,12 @@
 
 - [hidapi](https://github.com/libusb/hidapi)
 
+## Installing
+
+```
+pip install 
+```
+
 ## Supported Streamdecks:
 
 - Streamdeck Mk.2
