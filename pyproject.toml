@@ -1,2 +1,25 @@
+[project]
+name = "sd_controls"
+version = "0.0.1"
+authors = [
+  { name="Niklas Rousset", email="byrousset@gmail.com" },
+]
+description = "A small and simple framework for streamdeck applications"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/niklasr22/streamdeck-controls"
+"Bug Tracker" = "https://github.com/niklasr22/streamdeck-controls/issues"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [tool.black]
 line-length = 119

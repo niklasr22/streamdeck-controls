@@ -1,22 +1,6 @@
 import hid
 from PIL import Image
-
 from streamdeck import StreamDeck, StreamDeckMk2
-
-DEVICE_VID_ELGATO = 0x0FD9
-
-
-def find_streamdecks() -> list[StreamDeck]:
-    streamdeck_map = {StreamDeckMk2._PID: StreamDeckMk2}
-
-    decks = []
-
-    usb_devices = hid.enumerate()
-    for device in usb_devices:
-        if device["vendor_id"] == DEVICE_VID_ELGATO and device["product_id"] in streamdeck_map:
-            decks.append((streamdeck_map[device["product_id"]])(hid.Device(path=device["path"])))
-    return decks
-
 
 if __name__ == "__main__":
     streamdecks = find_streamdecks()

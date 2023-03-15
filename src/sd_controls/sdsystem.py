@@ -5,10 +5,13 @@ from functools import cache
 from threading import Lock, Thread
 from typing import Iterator
 
+import hid
 from PIL import Image, ImageDraw, ImageFont
-
-from simple_device_test import find_streamdecks
 from streamdeck import StreamDeck
+
+from sd_controls.streamdeck import StreamDeckMk2
+
+DEVICE_VID_ELGATO = 0x0FD9
 
 
 class NoStreamDeckFoundExcpetion(Exception):
@@ -35,7 +38,7 @@ class SDSystem:
         self._connect()
 
     def _connect(self):
-        decks = find_streamdecks()
+        decks = SDSystem.find_streamdecks()
         if len(decks) == 0:
             raise NoStreamDeckFoundExcpetion("There is no streamdeck available")
         self._deck: StreamDeck = decks[0]
@@ -140,6 +143,18 @@ class SDSystem:
 
     def __del__(self):
         self.close()
+
+    @staticmethod
+    def find_streamdecks() -> list[StreamDeck]:
+        streamdeck_map = {StreamDeckMk2._PID: StreamDeckMk2}
+
+        decks = []
+
+        usb_devices = hid.enumerate()
+        for device in usb_devices:
+            if device["vendor_id"] == DEVICE_VID_ELGATO and device["product_id"] in streamdeck_map:
+                decks.append((streamdeck_map[device["product_id"]])(hid.Device(path=device["path"])))
+        return decks
 
 
 class _SDApp(ABC):
