@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import Enum, IntEnum
 from functools import cache
+from pathlib import Path
 from threading import Lock, Thread
 from typing import Iterator
 
@@ -10,7 +11,10 @@ from streamdeck import StreamDeck
 
 from sd_controls.streamdeck import StreamDeckMk2
 
-DEVICE_VID_ELGATO = 0x0FD9
+_IMG_PATH = Path(__file__, "imgs")
+
+
+_DEVICE_VID_ELGATO = 0x0FD9
 
 
 class NoStreamDeckFoundExcpetion(Exception):
@@ -22,14 +26,17 @@ class Orientation(Enum):
     FLIPPED_180 = 2
 
 
+class Sprites:
+    CLEAR = Image.open(_IMG_PATH / "clear.jpeg")
+    BACK_BTN = Image.open(_IMG_PATH / "back_btn.jpeg")
+
+
 class SDSystem:
     def __init__(self, orientation=Orientation.DEFAULT, timeout: int = 0) -> None:
         self._apps: list[SDUserApp] = []
         self._deck: StreamDeck = None
         self._deck_thread: Thread = None
         self._running_app: _SDApp = None
-        self._back_btn_img = Image.open("./imgs/back_btn.jpeg")
-        self._clear_key = Image.open("./imgs/clear.jpeg")
         self._key_lock = Lock()
         self._orientation = orientation
         self._default_timeout = timeout
@@ -65,7 +72,7 @@ class SDSystem:
 
     def clear_deck(self) -> None:
         for key in range(self.get_key_count()):
-            self._deck.set_key_image(key, self._clear_key)
+            self._deck.set_key_image(key, Sprites.CLEAR)
         if self._is_user_app_running():
             self.set_back_btn()
 
@@ -95,7 +102,7 @@ class SDSystem:
         return self._running_app and issubclass(type(self._running_app), SDUserApp)
 
     def set_back_btn(self):
-        self.set_key(0, self._back_btn_img)
+        self.set_key(0, Sprites.BACK_BTN)
 
     def set_key(self, key: int, image: Image) -> bool:
         self._key_lock.acquire()
@@ -151,7 +158,7 @@ class SDSystem:
 
         usb_devices = hid.enumerate()
         for device in usb_devices:
-            if device["vendor_id"] == DEVICE_VID_ELGATO and device["product_id"] in streamdeck_map:
+            if device["vendor_id"] == _DEVICE_VID_ELGATO and device["product_id"] in streamdeck_map:
                 decks.append((streamdeck_map[device["product_id"]])(hid.Device(path=device["path"])))
         return decks
 
