@@ -7,9 +7,8 @@ from typing import Iterator
 
 import hid
 from PIL import Image, ImageDraw, ImageFont
-from streamdeck import StreamDeck
 
-from sd_controls.streamdeck import StreamDeckMk2
+from sd_controls.streamdeck import StreamDeck, StreamDeckMk2
 
 _IMG_PATH = Path(__file__, "imgs")
 
