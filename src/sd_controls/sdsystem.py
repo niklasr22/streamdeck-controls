@@ -10,7 +10,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 from sd_controls.streamdeck import StreamDeck, StreamDeckMk2
 
-_IMG_PATH = Path(__file__).parent / "imgs"
+_LIB_PATH = Path(__file__).parent
+_IMG_PATH = _LIB_PATH / "imgs"
+_FONT_PATH = _LIB_PATH / "fonts"
 
 
 _DEVICE_VID_ELGATO = 0x0FD9
@@ -223,7 +225,7 @@ class SDUserApp(_SDApp, ABC):
     @staticmethod
     @cache
     def font(size: int):
-        return ImageFont.truetype("./kitchencontrols/roboto.ttf", size)
+        return ImageFont.truetype(_FONT_PATH / "Roboto" / "Roboto-Regular.ttf", size)
 
     @staticmethod
     def generate_labeled_img(
