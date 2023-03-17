@@ -225,7 +225,7 @@ class SDUserApp(_SDApp, ABC):
     @staticmethod
     @cache
     def font(size: int):
-        return ImageFont.truetype(_FONT_PATH / "Roboto" / "Roboto-Regular.ttf", size)
+        return ImageFont.truetype(str(_FONT_PATH / "Roboto" / "Roboto-Regular.ttf"), size)
 
     @staticmethod
     def generate_labeled_img(
