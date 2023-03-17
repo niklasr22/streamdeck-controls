@@ -7,7 +7,7 @@
 ## Installing
 
 ```
-pip install 
+pip install sd-controls
 ```
 
 ## Supported Streamdecks:
