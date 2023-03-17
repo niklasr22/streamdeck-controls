@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from enum import Enum, IntEnum
+from enum import Enum
 from functools import cache
 from pathlib import Path
 from threading import Lock, Thread
@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from sd_controls.streamdeck import StreamDeck, StreamDeckMk2
 
-_IMG_PATH = Path(__file__, "imgs")
+_IMG_PATH = Path(__file__).parent / "imgs"
 
 
 _DEVICE_VID_ELGATO = 0x0FD9
