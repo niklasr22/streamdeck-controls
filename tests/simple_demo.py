@@ -1,7 +1,5 @@
-from PIL import Image
-
-from sd_controls.sdsystem import SDSystem
-from sd_controls.streamdeck import StreamDeck, StreamDeckMk2
+from sd_controls.sdsystem import SDSystem, Sprites
+from sd_controls.streamdeck import StreamDeck
 
 if __name__ == "__main__":
     streamdecks = SDSystem.find_streamdecks()
@@ -22,13 +20,9 @@ if __name__ == "__main__":
         elif keys[3]:
             streamdeck.set_standby_timeout(0)
         elif keys[4]:
-            with Image.open("imgs/back_btn.jpeg", mode="r") as img:
-                img = img.rotate(180)
-                streamdeck.set_key_image(4, image=img)
+            streamdeck.set_key_image(4, Sprites.BACK_BTN)
         elif keys[5]:
-            with Image.open("imgs/goat.jpeg", mode="r") as img:
-                img = img.rotate(180)
-                streamdeck.set_key_image(4, image=img)
+            streamdeck.set_key_image(4, Sprites.GOAT)
 
     deck.add_event_listener(update)
     deck.run()

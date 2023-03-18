@@ -30,6 +30,7 @@ class Orientation(Enum):
 class Sprites:
     CLEAR = Image.open(_IMG_PATH / "clear.jpeg")
     BACK_BTN = Image.open(_IMG_PATH / "back_btn.jpeg")
+    GOAT = Image.open(_IMG_PATH / "goat.jpeg")
 
 
 class SDSystem:
@@ -271,7 +272,6 @@ class _LaunchPad(_SDSystemApp):
         self.apps: dict[int, SDUserApp] = {}
 
     def init(self) -> None:
-        print("Started Launchpad")
         self.apps.clear()
         for key, app in enumerate(self._system.get_apps()[: self._system.get_key_count()]):
             self.set_key(key, app.get_icon())
