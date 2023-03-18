@@ -1,10 +1,19 @@
 # Streamdeck controls
 
-## Prerequisites:
+This project is a simple and small framework which simplifies developing and running custom apps for streamdeck devices.
+It allows using streamdecks without the offical software so you can use it with any major OS.
+
+## Currently supported Streamdecks:
+
+- Streamdeck Mk.2
+
+## Installing
+
+### Prerequisites:
 
 - [hidapi](https://github.com/libusb/hidapi)
 
-## Installing
+### Installing sd-controls:
 
 ```
 pip install sd-controls
@@ -15,11 +24,7 @@ pip install sd-controls
 If you are interested in this project and have a streamdeck, please consider contributing to it.
 Adding support for other Streamdecks is greatly appreciated but feel free to propose any other changes too!
 
-## Currently supported Streamdecks:
-
-- Streamdeck Mk.2
-
-## Linux udev rules
+## Using this software with Linux (Linux udev rules):
 
 Create a `/etc/udev/rules.d/50-elgato.rules` file with the following content:
 
@@ -29,7 +34,7 @@ SUBSYSTEM=="usb", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0080", MODE:="666"
 KERNEL=="hidraw*", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0080", MODE:="666", GROUP="plugdev"
 ```
 
-## Example:
+## Example app:
 
 ```
 from PIL import Image
