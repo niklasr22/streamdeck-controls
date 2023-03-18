@@ -1,7 +1,6 @@
 # general
 /.venv
 /.vscode
-/__pycache__
 
 # test files
 /testfiles
