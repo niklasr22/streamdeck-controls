@@ -9,16 +9,6 @@
 # macos files
 .DS_Store
 
-# apps
-/memory
-/kitchencontrols
-
-/scripts/*
-
-
-# app files
-config.json
-
 # builds and cache
 *.egg-info
 **/__pycache__
