@@ -7,6 +7,67 @@ from PIL import Image
 
 
 class StreamDeck(ABC):
+    _ICON_SIZE: int = 0
+    _KEY_COUNT: int = 0
+    _KEY_DATA_OFFSET: int = 0
+    _IMAGE_CMD_HEADER_LENGTH: int = 0
+    _IMAGE_CMD_MAX_PAYLOAD_LENGTH: int = 0
+
+    def __init__(self) -> None:
+        self._event_listeners: list[callable[[StreamDeck], None]] = []
+        self._keys: list[bool] = [False] * self._KEY_COUNT
+        self._running = False
+
+    def set_brightness(self, percentage: int) -> None:
+        self._brightness = percentage
+
+    def get_brightness(self) -> int:
+        return self._brightness
+
+    def set_standby_timeout(self, timeout_secs: int) -> None:
+        self._timeout = timeout_secs
+
+    def get_standby_timeout(self) -> None:
+        return self._timeout
+
+    def get_key_count(self) -> int:
+        return self._KEY_COUNT
+
+    def get_keys(self) -> list[bool]:
+        return self._keys
+
+    def run(self) -> None:
+        self._running = True
+        try:
+            while self._running:
+                data = self._get_data()
+                if data is None:
+                    continue
+
+                keys_before = self._keys.copy()
+                self._keys = data
+                for listener in self._event_listeners:
+                    listener(self, keys_before, self._keys.copy())
+        except (KeyboardInterrupt, hid.HIDException):
+            self._running = False
+
+    def stop(self) -> None:
+        self._running = False
+
+    def add_event_listener(self, callback: Callable[[Self, list[bool], list[bool]], None]) -> None:
+        self._event_listeners.append(callback)
+
+    def clear_event_listeners(self) -> None:
+        self._event_listeners.clear()
+
+    @abstractmethod
+    def set_key_image(self, key: int, image: Image.Image) -> bool: ...
+
+    @abstractmethod
+    def _get_data(self) -> list[bool] | None: ...
+
+
+class HardwareStreamDeck(ABC):
     _PID: int = 0
     _ICON_SIZE: int = 0
     _KEY_COUNT: int = 0
@@ -25,59 +86,22 @@ class StreamDeck(ABC):
     def __str__(self) -> str:
         return f"{self._device.product} ({self._device.manufacturer})"
 
-    def set_brightness(self, percentage: int) -> None:
-        self._brightness = percentage
-
-    def get_brightness(self) -> int:
-        return self._brightness
-
-    def set_standby_timeout(self, timeout_secs: int) -> None:
-        self._timeout = timeout_secs
-
-    def get_standby_timeout(self) -> None:
-        return self._timeout
-
     @abstractmethod
     def _get_send_image_command_header(
         self, key: int, is_last_package: bool, payload_length: int, package_index: int
-    ) -> bytes:
-        ...
-
-    def get_key_count(self) -> int:
-        return self._KEY_COUNT
-
-    def get_keys(self) -> list[bool]:
-        return self._keys
-
-    def run(self) -> None:
-        self._running = True
-        try:
-            while self._running:
-                data = self._device.read(self._buffer_size, self._read_interval)
-                if len(data) > 0:
-                    keys_before = self._keys.copy()
-                    self._keys = [
-                        bool(k) for k in data[self._KEY_DATA_OFFSET : self._KEY_DATA_OFFSET + self._KEY_COUNT]
-                    ]
-                    for listener in self._event_listeners:
-                        listener(self, keys_before, self._keys.copy())
-        except (KeyboardInterrupt, hid.HIDException):
-            self._running = False
-
-    def stop(self) -> None:
-        self._running = False
-
-    def add_event_listener(self, callback: Callable[[Self, list[bool], list[bool]], None]) -> None:
-        self._event_listeners.append(callback)
-
-    def clear_event_listeners(self) -> None:
-        self._event_listeners.clear()
+    ) -> bytes: ...
 
     def __del__(self):
         print("Close device")
         self._device.close()
 
-    def set_key_image(self, key: int, image: Image) -> bool:
+    def _get_data(self) -> list[bool] | None:
+        data = self._device.read(self._buffer_size, self._read_interval)
+        if len(data) > 0:
+            return [bool(k) for k in data[self._KEY_DATA_OFFSET : self._KEY_DATA_OFFSET + self._KEY_COUNT]]
+        return None
+
+    def set_key_image(self, key: int, image: Image.Image) -> bool:
         max_payload_length = self._IMAGE_CMD_MAX_PAYLOAD_LENGTH
 
         img_byte_buffer = io.BytesIO()
