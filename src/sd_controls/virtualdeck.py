@@ -1,5 +1,4 @@
 import tkinter as tk
-from pathlib import Path
 
 from PIL import Image
 from PIL import ImageTk as itk
