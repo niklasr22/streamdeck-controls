@@ -8,10 +8,10 @@ from typing import Iterator
 import hid
 from PIL import Image, ImageDraw, ImageFont
 
+from sd_controls.sprites import Sprites
 from sd_controls.streamdeck import StreamDeck, StreamDeckMk2
 
 _LIB_PATH = Path(__file__).parent
-_IMG_PATH = _LIB_PATH / "imgs"
 _FONT_PATH = _LIB_PATH / "fonts"
 
 
@@ -27,16 +27,10 @@ class Orientation(Enum):
     FLIPPED_180 = 2
 
 
-class Sprites:
-    CLEAR = Image.open(_IMG_PATH / "clear.jpeg")
-    BACK_BTN = Image.open(_IMG_PATH / "back_btn.jpeg")
-    GOAT = Image.open(_IMG_PATH / "goat.jpeg")
-
-
 class SDSystem:
-    def __init__(self, orientation=Orientation.DEFAULT, timeout: int = 0) -> None:
+    def __init__(self, orientation=Orientation.DEFAULT, timeout: int = 0, deck: StreamDeck = None) -> None:
         self._apps: list[SDUserApp] = []
-        self._deck: StreamDeck = None
+        self._deck: StreamDeck = deck
         self._deck_thread: Thread = None
         self._running_app: _SDApp = None
         self._key_lock = Lock()
@@ -46,22 +40,25 @@ class SDSystem:
         self._connect()
 
     def _connect(self):
-        decks = SDSystem.find_streamdecks()
-        if len(decks) == 0:
-            raise NoStreamDeckFoundExcpetion("There is no streamdeck available")
-        self._deck: StreamDeck = decks[0]
-        print("Selected", self._deck)
+        if not self._deck:
+            decks = SDSystem.find_streamdecks()
+            if len(decks) == 0:
+                raise NoStreamDeckFoundExcpetion("There is no streamdeck available")
+            self._deck: StreamDeck = decks[0]
+            print("Selected", self._deck)
         self._create_key_map()
         self._deck.add_event_listener(self._system_key_listener)
 
     def start(self) -> None:
         self._deck.set_standby_timeout(self._default_timeout)
-        self._deck_thread = Thread(target=self._deck.run)
-        self._deck_thread.start()
+        # self._deck_thread = Thread(target=self._deck.run)
+        # self._deck_thread.start()
         try:
             print("Started StreamDeck System")
+            # starts launchpad
             self.close_app()
-            self._deck_thread.join()
+            self._deck.run()
+            # self._deck_thread.join()
         except KeyboardInterrupt:
             self.close()
             print("Stream Deck System shutdown")
@@ -140,8 +137,8 @@ class SDSystem:
     def _stop_deck(self) -> None:
         if self._deck:
             self._deck.stop()
-            if self._deck_thread and self._deck_thread.is_alive():
-                self._deck_thread.join(2.0)
+            # if self._deck_thread and self._deck_thread.is_alive():
+            #     self._deck_thread.join(2.0)
 
     def close(self) -> None:
         self._deck.set_standby_timeout(1)
