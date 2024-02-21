@@ -106,7 +106,7 @@ class SDSystem:
     def set_back_btn(self):
         self.set_key(0, Sprites.BACK_BTN)
 
-    def set_key(self, key: int, image: Image) -> bool:
+    def set_key(self, key: int, image: Image.Image) -> bool:
         self._key_lock.acquire()
         if self._orientation == Orientation.DEFAULT:
             image = image.rotate(180)
@@ -170,7 +170,7 @@ class _SDApp(ABC):
         self._running = False
         self._system: SDSystem = None
 
-    def set_key(self, key: int, image: Image):
+    def set_key(self, key: int, image: Image.Image):
         if 0 < key < self._system.get_key_count():
             return self._system.set_key(key, image)
         return False
@@ -197,15 +197,12 @@ class _SDApp(ABC):
         self._system = None
 
     @abstractmethod
-    def init(self) -> None:
-        ...
+    def init(self) -> None: ...
 
     @abstractmethod
-    def update(self, keys_before: list[bool], keys: list[bool]) -> None:
-        ...
+    def update(self, keys_before: list[bool], keys: list[bool]) -> None: ...
 
-    def on_close(self) -> None:
-        ...
+    def on_close(self) -> None: ...
 
 
 class SDUserApp(_SDApp, ABC):
@@ -220,8 +217,7 @@ class SDUserApp(_SDApp, ABC):
         return self._name
 
     @abstractmethod
-    def get_icon(self) -> Image:
-        ...
+    def get_icon(self) -> Image: ...
 
     @staticmethod
     @cache
@@ -262,7 +258,7 @@ class SDUserApp(_SDApp, ABC):
 
 
 class _SDSystemApp(_SDApp, ABC):
-    def set_key(self, key: int, image: Image):
+    def set_key(self, key: int, image: Image.Image):
         return self._system.set_key(key, image)
 
 
