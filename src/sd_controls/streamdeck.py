@@ -1,3 +1,4 @@
+import asyncio
 import io
 from abc import ABC, abstractmethod
 from typing import Callable, Self
@@ -36,7 +37,7 @@ class StreamDeck(ABC):
     def get_keys(self) -> list[bool]:
         return self._keys
 
-    def run(self) -> None:
+    async def run(self) -> None:
         self._running = True
         try:
             while self._running:
@@ -48,6 +49,7 @@ class StreamDeck(ABC):
                 self._keys = data
                 for listener in self._event_listeners:
                     listener(self, keys_before, self._keys.copy())
+                await asyncio.sleep(0)
         except (KeyboardInterrupt, hid.HIDException):
             self._running = False
 

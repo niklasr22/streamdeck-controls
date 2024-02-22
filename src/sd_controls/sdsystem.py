@@ -1,9 +1,12 @@
+import asyncio
+import inspect
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from enum import Enum
 from functools import cache
 from pathlib import Path
 from threading import Lock, Thread
-from typing import Iterator
+from typing import Callable, Iterator
 
 import hid
 from PIL import Image, ImageDraw, ImageFont
@@ -57,7 +60,7 @@ class SDSystem:
             print("Started StreamDeck System")
             # starts launchpad
             self.close_app()
-            self._deck.run()
+            asyncio.run(self._deck.run())
             # self._deck_thread.join()
         except KeyboardInterrupt:
             self.close()
@@ -166,13 +169,37 @@ class _SDApp(ABC):
     def __init__(self) -> None:
         self._running = False
         self._system: SDSystem = None
+        self._key_up_callbacks: dict[int, list[Callable[[], None]]] = defaultdict(list)
+        self._key_down_callbacks: dict[int, list[Callable[[], None]]] = defaultdict(list)
 
     def set_key(self, key: int, image: Image.Image):
+        if not self._check_system():
+            return False
+
         if 0 < key < self._system.get_key_count():
             return self._system.set_key(key, image)
         return False
 
+    def setup_key(self, key: int, *, down: Callable[[], None] = None, up: Callable[[], None] = None) -> bool:
+        if not self._check_system():
+            return False
+        if up:
+            self._key_up_callbacks[key].append(up)
+        if down:
+            self._key_down_callbacks[key].append(down)
+        return True
+
+    def clear_key_event(self, key: int) -> bool:
+        if not self._check_system():
+            return False
+        self._key_up_callbacks[key].clear()
+        self._key_down_callbacks[key].clear()
+        return True
+
     def clear_deck(self) -> None:
+        if not self._check_system():
+            return False
+
         self._system.clear_deck()
 
     def start(self, system: SDSystem) -> None:
@@ -181,10 +208,30 @@ class _SDApp(ABC):
         self.init()
 
     def key_event(self, keys_before: list[bool], keys: list[bool]):
-        self.update(keys_before, keys)
+        self.keys_update(keys_before, keys)
+        loop = asyncio.get_event_loop()
+        for key, (before, after) in enumerate(zip(keys_before, keys)):
+            if before and not after:
+                for callback in self._key_up_callbacks[key]:
+                    if inspect.iscoroutinefunction(callback):
+                        loop.create_task(callback())
+                    else:
+                        callback()
+            elif not before and after:
+                for callback in self._key_down_callbacks[key]:
+                    if inspect.iscoroutinefunction(callback):
+                        t = loop.create_task(callback())
+                    else:
+                        callback()
 
     def close_app(self):
         self._system.close_app()
+
+    def _check_system(self) -> bool:
+        if not self._system:
+            self._running = False
+            return False
+        return True
 
     def stop(self) -> None:
         self._running = False
@@ -196,8 +243,7 @@ class _SDApp(ABC):
     @abstractmethod
     def init(self) -> None: ...
 
-    @abstractmethod
-    def update(self, keys_before: list[bool], keys: list[bool]) -> None: ...
+    def keys_update(self, keys_before: list[bool], keys: list[bool]) -> None: ...
 
     def on_close(self) -> None: ...
 
@@ -270,7 +316,7 @@ class _LaunchPad(_SDSystemApp):
             self.set_key(key, app.get_icon())
             self.apps[key] = app
 
-    def update(self, keys_before: list[bool], keys: list[bool]) -> None:
+    def keys_update(self, keys_before: list[bool], keys: list[bool]) -> None:
         for key, (before, after) in enumerate(zip(keys_before, keys)):
             if before and not after and key < len(self.apps):
                 self._system._start_app(self.apps[key])
