@@ -1,5 +1,6 @@
 import asyncio
 import io
+import time
 from abc import ABC, abstractmethod
 from typing import Callable, Self
 
@@ -41,8 +42,11 @@ class StreamDeck(ABC):
         self._running = True
         try:
             while self._running:
+                start = time.time()
                 data = self._get_data()
+                print("Data: Update Time:", time.time() - start)
                 if data is None:
+                    await asyncio.sleep(0)
                     continue
 
                 keys_before = self._keys.copy()
@@ -77,7 +81,7 @@ class HardwareStreamDeck(StreamDeck):
     _IMAGE_CMD_HEADER_LENGTH: int = 0
     _IMAGE_CMD_MAX_PAYLOAD_LENGTH: int = 0
 
-    def __init__(self, device: hid.Device, read_interval: int = 100, buffer_size: int = 1024) -> None:
+    def __init__(self, device: hid.Device, read_interval: int = 1, buffer_size: int = 1024) -> None:
         super().__init__()
         self._device = device
         self._read_interval = read_interval
@@ -153,7 +157,7 @@ class StreamDeckMk2(HardwareStreamDeck):
     _IMAGE_CMD_HEADER_LENGTH: int = 8
     _IMAGE_CMD_MAX_PAYLOAD_LENGTH: int = 1016
 
-    def __init__(self, device: hid.Device, read_interval: int = 60, buffer_size: int = 512) -> None:
+    def __init__(self, device: hid.Device, read_interval: int = 1, buffer_size: int = 512) -> None:
         super().__init__(device, read_interval, buffer_size)
 
     def set_brightness(self, percentage: int) -> None:
