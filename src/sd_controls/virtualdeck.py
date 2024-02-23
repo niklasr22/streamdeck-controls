@@ -31,9 +31,7 @@ class VirtualDeckMk2(StreamDeck):
         self._button_frame.pack(side=tk.TOP)
 
         for i in range(self._KEY_COUNT):
-            key_image = itk.PhotoImage(
-                file="/Users/niklasrousset/Documents/Projects/VSCodeProjects/sd-controls/src/sd_controls/imgs/goat.jpeg"
-            )
+            key_image = itk.PhotoImage(Sprites.CLEAR)
             key_btn = tk.Button(
                 self._button_frame,
                 image=key_image,
@@ -90,4 +88,3 @@ class VirtualDeckMk2(StreamDeck):
 
     def __del__(self):
         print("Close device")
-        # self._tkwindow.close()
