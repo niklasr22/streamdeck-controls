@@ -71,7 +71,7 @@ class HelloWorldApp(SDUserApp):
         self.set_key(self._KEY_GREET, self._hello)
         self.set_key(self._KEY_ROTATE, self._rotate_key)
 
-    def update(self, keys_before: list[bool], keys: list[bool]) -> None:
+    def keys_update(self, keys_before: list[bool], keys: list[bool]) -> None:
         if not keys[self._KEY_GREET] and keys_before[self._KEY_GREET]:
             self.set_key(self._KEY_GREET, self._world)
         if not keys[self._KEY_ROTATE] and keys_before[self._KEY_ROTATE]:
