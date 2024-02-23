@@ -69,7 +69,7 @@ class StreamDeck(ABC):
     def _get_data(self) -> list[bool] | None: ...
 
 
-class HardwareStreamDeck(ABC):
+class HardwareStreamDeck(StreamDeck):
     _PID: int = 0
     _ICON_SIZE: int = 0
     _KEY_COUNT: int = 0
@@ -78,6 +78,7 @@ class HardwareStreamDeck(ABC):
     _IMAGE_CMD_MAX_PAYLOAD_LENGTH: int = 0
 
     def __init__(self, device: hid.Device, read_interval: int = 100, buffer_size: int = 1024) -> None:
+        super().__init__()
         self._device = device
         self._read_interval = read_interval
         self._buffer_size = buffer_size
@@ -95,7 +96,8 @@ class HardwareStreamDeck(ABC):
 
     def __del__(self):
         print("Close device")
-        self._device.close()
+        if self._device:
+            self._device.close()
 
     def _get_data(self) -> list[bool] | None:
         data = self._device.read(self._buffer_size, self._read_interval)

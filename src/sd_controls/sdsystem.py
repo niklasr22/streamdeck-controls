@@ -12,6 +12,7 @@ from typing import Callable, Iterator
 import hid
 from PIL import Image, ImageDraw, ImageFont
 
+import sd_controls
 from sd_controls.sprites import Sprites
 from sd_controls.streamdeck import StreamDeck, StreamDeckMk2
 
@@ -33,6 +34,7 @@ class Orientation(Enum):
 
 class SDSystem:
     def __init__(self, orientation=Orientation.DEFAULT, timeout: int = 0, deck: StreamDeck = None) -> None:
+        print(f"Initialising SD-Controls {sd_controls.__version__})...")
         self._apps: list[SDUserApp] = []
         self._deck: StreamDeck = deck
         self._running_app: _SDApp = None
