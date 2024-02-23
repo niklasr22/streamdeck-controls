@@ -143,7 +143,7 @@ class HardwareStreamDeck(ABC):
         return True
 
 
-class StreamDeckMk2(StreamDeck):
+class StreamDeckMk2(HardwareStreamDeck):
     _PID: int = 0x0080
     _ICON_SIZE: int = 70
     _KEY_COUNT: int = 15
