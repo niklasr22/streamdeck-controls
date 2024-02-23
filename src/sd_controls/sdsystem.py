@@ -270,7 +270,7 @@ class SDUserApp(_SDApp, ABC):
 
     @staticmethod
     def generate_labeled_img(
-        base: Image,
+        base: Image.Image,
         label: str,
         position: tuple[int, int] = (36, 52),
         color: tuple[int, int, int] = (255, 255, 255),
