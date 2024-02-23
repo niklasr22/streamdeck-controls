@@ -1,5 +1,6 @@
 import asyncio
 import inspect
+import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from enum import Enum
@@ -213,16 +214,22 @@ class _SDApp(ABC):
         for key, (before, after) in enumerate(zip(keys_before, keys)):
             if before and not after:
                 for callback in self._key_up_callbacks[key]:
-                    if inspect.iscoroutinefunction(callback):
-                        loop.create_task(callback())
-                    else:
-                        callback()
+                    try:
+                        if inspect.iscoroutinefunction(callback):
+                            loop.create_task(callback())
+                        else:
+                            callback()
+                    except Exception as e:
+                        logging.error(f"Error in key up callback for key {key}: {e}")
             elif not before and after:
                 for callback in self._key_down_callbacks[key]:
-                    if inspect.iscoroutinefunction(callback):
-                        t = loop.create_task(callback())
-                    else:
-                        callback()
+                    try:
+                        if inspect.iscoroutinefunction(callback):
+                            loop.create_task(callback())
+                        else:
+                            callback()
+                    except Exception as e:
+                        logging.error(f"Error in key up callback for key {key}: {e}")
 
     def close_app(self):
         self._system.close_app()
