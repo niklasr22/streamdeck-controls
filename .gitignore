@@ -12,3 +12,6 @@
 *.egg-info
 **/__pycache__
 dist
+
+# IDE files
+pyrightconfig.json
