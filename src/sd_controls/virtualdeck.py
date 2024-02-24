@@ -3,6 +3,8 @@ import tkinter as tk
 from PIL import Image
 from PIL import ImageTk as itk
 
+from typing import Callable
+
 from sd_controls.sprites import Sprites
 from sd_controls.streamdeck import StreamDeck
 
@@ -49,7 +51,7 @@ class VirtualDeckMk2(StreamDeck):
     def __str__(self) -> str:
         return super().__str__()
 
-    def _key_press(self, key: int) -> None:
+    def _key_press(self, key: int) -> Callable:
         def pressed() -> None:
             self._btn_presses[key] = True
 
