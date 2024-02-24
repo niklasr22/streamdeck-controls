@@ -6,7 +6,7 @@ from collections import defaultdict
 from enum import Enum
 from functools import cache
 from pathlib import Path
-from threading import Lock, Thread
+from threading import Lock
 from typing import Callable, Iterator
 
 import hid
@@ -33,9 +33,9 @@ class Orientation(Enum):
 
 
 class SDSystem:
-    def __init__(self, orientation=Orientation.DEFAULT, timeout: int = 0, deck: StreamDeck = None) -> None:
+    def __init__(self, orientation=Orientation.DEFAULT, timeout: int = 0, deck: StreamDeck | None = None) -> None:
         print(f"Initialising SD-Controls {sd_controls.__version__})...")
-        self._apps: list[SDUserApp] = []
+        self._apps: list["SDUserApp"] = []
         self._deck: StreamDeck = deck
         self._running_app: _SDApp = None
         self._key_lock = Lock()
@@ -65,7 +65,7 @@ class SDSystem:
             self.close()
             print("Stream Deck System shutdown")
 
-    def register_app(self, app: "_SDApp") -> None:
+    def register_app(self, app: "SDUserApp") -> None:
         self._apps.append(app)
 
     def get_apps(self) -> list["SDUserApp"]:
@@ -177,7 +177,7 @@ class _SDApp(ABC):
             return self._system.set_key(key, image)
         return False
 
-    def setup_key(self, key: int, *, down: Callable[[], None] = None, up: Callable[[], None] = None) -> bool:
+    def setup_key(self, key: int, *, down: Callable | None = None, up: Callable | None = None) -> bool:
         if not self._check_system():
             return False
         if up:
@@ -195,7 +195,7 @@ class _SDApp(ABC):
 
     def clear_deck(self) -> None:
         if not self._check_system():
-            return False
+            return
 
         self._system.clear_deck()
 
@@ -263,7 +263,7 @@ class SDUserApp(_SDApp, ABC):
         return self._name
 
     @abstractmethod
-    def get_icon(self) -> Image: ...
+    def get_icon(self) -> Image.Image: ...
 
     @staticmethod
     @cache
@@ -278,7 +278,7 @@ class SDUserApp(_SDApp, ABC):
         color: tuple[int, int, int] = (255, 255, 255),
         font_size: int = 14,
         background: str | None = "#00000080",
-    ) -> Image:
+    ) -> Image.Image:
         labeled_img = base.copy()
         draw = ImageDraw.Draw(labeled_img)
         text_pos = position
