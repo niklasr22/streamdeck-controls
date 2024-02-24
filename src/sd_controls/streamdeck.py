@@ -1,8 +1,7 @@
 import asyncio
 import io
-import time
 from abc import ABC, abstractmethod
-from typing import Callable, Self
+from typing import Callable
 
 import hid
 from PIL import Image
@@ -11,14 +10,12 @@ from PIL import Image
 class StreamDeck(ABC):
     _ICON_SIZE: int = 0
     _KEY_COUNT: int = 0
-    _KEY_DATA_OFFSET: int = 0
-    _IMAGE_CMD_HEADER_LENGTH: int = 0
-    _IMAGE_CMD_MAX_PAYLOAD_LENGTH: int = 0
 
     def __init__(self) -> None:
-        self._event_listeners: list[callable[[StreamDeck], None]] = []
+        self._event_listeners: list[Callable[["StreamDeck", list[bool], list[bool]], None]] = []
         self._keys: list[bool] = [False] * self._KEY_COUNT
         self._running = False
+        self._brightness = 100
 
     def set_brightness(self, percentage: int) -> None:
         self._brightness = percentage
@@ -29,7 +26,7 @@ class StreamDeck(ABC):
     def set_standby_timeout(self, timeout_secs: int) -> None:
         self._timeout = timeout_secs
 
-    def get_standby_timeout(self) -> None:
+    def get_standby_timeout(self) -> int:
         return self._timeout
 
     def get_key_count(self) -> int:
@@ -42,9 +39,7 @@ class StreamDeck(ABC):
         self._running = True
         try:
             while self._running:
-                start = time.time()
                 data = self._get_data()
-                print("Data: Update Time:", time.time() - start)
                 if data is None:
                     await asyncio.sleep(0)
                     continue
@@ -60,7 +55,7 @@ class StreamDeck(ABC):
     def stop(self) -> None:
         self._running = False
 
-    def add_event_listener(self, callback: Callable[[Self, list[bool], list[bool]], None]) -> None:
+    def add_event_listener(self, callback: Callable[["StreamDeck", list[bool], list[bool]], None]) -> None:
         self._event_listeners.append(callback)
 
     def clear_event_listeners(self) -> None:
@@ -76,7 +71,6 @@ class StreamDeck(ABC):
 class HardwareStreamDeck(StreamDeck):
     _PID: int = 0
     _ICON_SIZE: int = 0
-    _KEY_COUNT: int = 0
     _KEY_DATA_OFFSET: int = 0
     _IMAGE_CMD_HEADER_LENGTH: int = 0
     _IMAGE_CMD_MAX_PAYLOAD_LENGTH: int = 0
@@ -86,9 +80,6 @@ class HardwareStreamDeck(StreamDeck):
         self._device = device
         self._read_interval = read_interval
         self._buffer_size = buffer_size
-        self._event_listeners: list[callable[[StreamDeck], None]] = []
-        self._keys: list[bool] = [False] * self._KEY_COUNT
-        self._running = False
 
     def __str__(self) -> str:
         return f"{self._device.product} ({self._device.manufacturer})"
