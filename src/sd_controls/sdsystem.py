@@ -169,6 +169,13 @@ class _SDApp(ABC):
         self._key_up_callbacks: dict[int, list[Callable[[], None]]] = defaultdict(list)
         self._key_down_callbacks: dict[int, list[Callable[[], None]]] = defaultdict(list)
 
+    def clear_key_callbacks(self):
+        """
+        Clears all key callbacks
+        """
+        self._key_up_callbacks.clear()
+        self._key_down_callbacks.clear()
+
     def set_key(self, key: int, image: Image.Image):
         if not self._check_system():
             return False
@@ -243,8 +250,8 @@ class _SDApp(ABC):
     def closed(self) -> None:
         self._system = None
 
-    @abstractmethod
-    def init(self) -> None: ...
+    def init(self) -> None:
+        self.clear_key_callbacks()
 
     def keys_update(self, keys_before: list[bool], keys: list[bool]) -> None: ...
 
