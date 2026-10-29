@@ -1,9 +1,8 @@
 import tkinter as tk
+from typing import Callable
 
 from PIL import Image
 from PIL import ImageTk as itk
-
-from typing import Callable
 
 from sd_controls.sprites import Sprites
 from sd_controls.streamdeck import StreamDeck
@@ -64,7 +63,7 @@ class VirtualDeckMk2(StreamDeck):
         super().set_standby_timeout(timeout_secs)
 
     def set_key_image(self, key: int, image: Image.Image) -> bool:
-        if 0 <= key and key >= self._KEY_COUNT:
+        if not 0 <= key < self._KEY_COUNT:
             return False
 
         if image:
@@ -78,7 +77,7 @@ class VirtualDeckMk2(StreamDeck):
         if self._refresh_images:
             for key in range(self._KEY_COUNT):
                 image = self._key_images[key]
-                if type(image) != itk.PhotoImage:
+                if not isinstance(image, itk.PhotoImage):
                     self._key_images[key] = itk.PhotoImage(image)
                 self._key_btns[key].config(image=self._key_images[key])
             self._refresh_images = False

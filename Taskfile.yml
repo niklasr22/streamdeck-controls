@@ -3,8 +3,10 @@ version: "3"
 tasks:
   build:
     cmds:
-      - rm ./dist/*
       - python -m build
+  test:
+    cmds:
+      - python -m unittest discover -v
   publish:
     cmds:
       - python -m twine upload dist/*

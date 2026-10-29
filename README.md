@@ -1,7 +1,7 @@
 # Streamdeck controls
 
 This project is a simple and small framework which simplifies developing and running custom apps for streamdeck devices.
-It allows using streamdecks without the offical software so you can use it with any major OS.
+It allows using streamdecks without the official software so you can use it with any major OS.
 
 ## Currently supported Streamdecks
 
@@ -11,15 +11,17 @@ It allows using streamdecks without the offical software so you can use it with 
 
 ### Prerequisites
 
+- Python 3.12 or newer (development targets Python 3.15)
+
 - [hidapi](https://github.com/libusb/hidapi)
 
 Linux:
 
 ```bash
 sudo apt install libhidapi-dev
-````
+```
 
-MacOS:
+macOS:
 
 ```bash
 brew install hidapi
@@ -30,6 +32,20 @@ brew install hidapi
 ```bash
 pip install sd-controls
 ```
+
+## Development
+
+```bash
+python3.15 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[dev]"
+python -m unittest discover -v
+python -m ruff check .
+python -m build
+```
+
+The virtual deck also requires Tkinter (often a separate OS package).
+The test suite uses fake devices and does not require connected hardware.
 
 ## Contributing
 
@@ -64,7 +80,7 @@ class HelloWorldApp(SDUserApp):
         self._world = SDUserApp.generate_labeled_img(Sprites.CLEAR, "World")
         self._rotate_key = Sprites.GOAT
 
-    def get_icon(self) -> Image:
+    def get_icon(self) -> Image.Image:
         return self._icon
 
     def init(self) -> None:

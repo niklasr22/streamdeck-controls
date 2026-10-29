@@ -16,6 +16,7 @@ class StreamDeck(ABC):
         self._keys: list[bool] = [False] * self._KEY_COUNT
         self._running = False
         self._brightness = 100
+        self._timeout = 0
 
     def set_brightness(self, percentage: int) -> None:
         self._brightness = percentage
@@ -49,7 +50,7 @@ class StreamDeck(ABC):
                 for listener in self._event_listeners:
                     listener(self, keys_before, self._keys.copy())
                 await asyncio.sleep(0)
-        except (KeyboardInterrupt, hid.HIDException):
+        finally:
             self._running = False
 
     def stop(self) -> None:
@@ -90,27 +91,27 @@ class HardwareStreamDeck(StreamDeck):
     ) -> bytes: ...
 
     def __del__(self):
-        print("Close device")
-        if self._device:
+        if getattr(self, "_device", None) is not None:
             self._device.close()
 
     def _get_data(self) -> list[bool] | None:
         data = self._device.read(self._buffer_size, self._read_interval)
-        if len(data) > 0:
+        if len(data) >= self._KEY_DATA_OFFSET + self._KEY_COUNT:
             return [bool(k) for k in data[self._KEY_DATA_OFFSET : self._KEY_DATA_OFFSET + self._KEY_COUNT]]
         return None
 
     def set_key_image(self, key: int, image: Image.Image) -> bool:
+        if not 0 <= key < self._KEY_COUNT:
+            return False
         max_payload_length = self._IMAGE_CMD_MAX_PAYLOAD_LENGTH
 
         img_byte_buffer = io.BytesIO()
-        image.save(img_byte_buffer, format="JPEG")
+        image.convert("RGB").save(img_byte_buffer, format="JPEG")
         img_bytes = img_byte_buffer.getvalue()
 
         package = 0
         offset = 0
         remaining_data = len(img_bytes)
-        # print("Total length", remaining_data)
         try:
             while remaining_data > 0:
                 payload_length = min(max_payload_length, remaining_data)
@@ -129,9 +130,6 @@ class HardwareStreamDeck(StreamDeck):
                 )
 
                 self._device.write(data)
-                # print(
-                #    "Wrote package", package, "Header:", header, "Data-Length:", len(data)
-                # )
 
                 offset += payload_length
                 package += 1

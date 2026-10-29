@@ -1,3 +1,6 @@
+import asyncio
+import sys
+
 from sd_controls.sdsystem import SDSystem, Sprites
 from sd_controls.streamdeck import StreamDeck
 
@@ -5,7 +8,7 @@ if __name__ == "__main__":
     streamdecks = SDSystem.find_streamdecks()
     if len(streamdecks) == 0:
         print("No streamdecks discovered")
-        exit()
+        sys.exit()
 
     deck = streamdecks[0]
     print(deck)
@@ -25,4 +28,4 @@ if __name__ == "__main__":
             streamdeck.set_key_image(4, Sprites.GOAT)
 
     deck.add_event_listener(update)
-    deck.run()
+    asyncio.run(deck.run())

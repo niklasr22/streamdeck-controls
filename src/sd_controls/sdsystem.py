@@ -34,7 +34,7 @@ class Orientation(Enum):
 
 class SDSystem:
     def __init__(self, orientation=Orientation.DEFAULT, timeout: int = 0, deck: StreamDeck | None = None) -> None:
-        print(f"Initialising SD-Controls {sd_controls.__version__})...")
+        print(f"Initialising SD-Controls {sd_controls.__version__}...")
         self._apps: list["SDUserApp"] = []
         self._deck: StreamDeck = deck
         self._running_app: _SDApp = None
@@ -42,6 +42,7 @@ class SDSystem:
         self._orientation = orientation
         self._default_timeout = timeout
         self._key_map = []
+        self._closed = False
         self._connect()
 
     def _connect(self):
@@ -55,15 +56,17 @@ class SDSystem:
         self._deck.add_event_listener(self._system_key_listener)
 
     def start(self) -> None:
-        self._deck.set_standby_timeout(self._default_timeout)
+        self._closed = False
         try:
+            self._deck.set_standby_timeout(self._default_timeout)
             print("Started StreamDeck System")
             # starts launchpad
             self.close_app()
             asyncio.run(self._deck.run())
         except KeyboardInterrupt:
-            self.close()
             print("Stream Deck System shutdown")
+        finally:
+            self.close()
 
     def register_app(self, app: "SDUserApp") -> None:
         self._apps.append(app)
@@ -100,18 +103,18 @@ class SDSystem:
             self._start_app(_LaunchPad())
 
     def _is_user_app_running(self) -> bool:
-        return self._running_app and issubclass(type(self._running_app), SDUserApp)
+        return isinstance(self._running_app, SDUserApp)
 
     def set_back_btn(self):
         self.set_key(0, Sprites.BACK_BTN)
 
     def set_key(self, key: int, image: Image.Image) -> bool:
-        self._key_lock.acquire()
-        if self._orientation == Orientation.DEFAULT:
-            image = image.rotate(180)
-        result = self._deck.set_key_image(self._key_map[key], image)
-        self._key_lock.release()
-        return result
+        if not 0 <= key < self.get_key_count():
+            return False
+        with self._key_lock:
+            if self._orientation == Orientation.DEFAULT:
+                image = image.rotate(180)
+            return self._deck.set_key_image(self._key_map[key], image)
 
     def get_keys(self) -> Iterator[bool]:
         match self._orientation:
@@ -128,26 +131,38 @@ class SDSystem:
             self.close_app()
             return
         if self._running_app:
-            self._running_app.key_event(keys_before, keys)
+            self._running_app.key_event(
+                [keys_before[key] for key in self._key_map],
+                [keys[key] for key in self._key_map],
+            )
 
     def set_brightness(self, brightness: int) -> None:
         self._deck.set_brightness(brightness)
 
     def get_brightness(self) -> int:
-        self._deck.get_brightness()
+        return self._deck.get_brightness()
 
     def _stop_deck(self) -> None:
         if self._deck:
             self._deck.stop()
 
     def close(self) -> None:
-        self._deck.set_standby_timeout(1)
-        self.close_app(shutdown=True)
-        self.clear_deck()
-        self._stop_deck()
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            self.close_app(shutdown=True)
+            try:
+                self._deck.set_standby_timeout(1)
+                self.clear_deck()
+            except hid.HIDException:
+                logging.exception("Could not reset the Stream Deck during shutdown")
+        finally:
+            self._stop_deck()
 
     def __del__(self):
-        self.close()
+        if getattr(self, "_deck", None) is not None:
+            self.close()
 
     @staticmethod
     def find_streamdecks() -> list[StreamDeck]:
@@ -213,26 +228,25 @@ class _SDApp(ABC):
 
     def key_event(self, keys_before: list[bool], keys: list[bool]):
         self.keys_update(keys_before, keys)
-        loop = asyncio.get_event_loop()
         for key, (before, after) in enumerate(zip(keys_before, keys)):
             if before and not after:
                 for callback in self._key_up_callbacks[key]:
                     try:
                         if inspect.iscoroutinefunction(callback):
-                            loop.create_task(callback())
+                            asyncio.get_running_loop().create_task(callback())
                         else:
                             callback()
-                    except Exception as e:
-                        logging.error(f"Error in key up callback for key {key}: {e}")
+                    except Exception:
+                        logging.exception("Error in key up callback for key %s", key)
             elif not before and after:
                 for callback in self._key_down_callbacks[key]:
                     try:
                         if inspect.iscoroutinefunction(callback):
-                            loop.create_task(callback())
+                            asyncio.get_running_loop().create_task(callback())
                         else:
                             callback()
-                    except Exception as e:
-                        logging.error(f"Error in key up callback for key {key}: {e}")
+                    except Exception:
+                        logging.exception("Error in key down callback for key %s", key)
 
     def close_app(self):
         self._system.close_app()
